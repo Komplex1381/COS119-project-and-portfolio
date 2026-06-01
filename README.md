@@ -22,9 +22,9 @@ After completing the above steps, feel free to begin updating this readme where 
 
 # Project & Portfolio 1
 
-### Student First & Last Name
+### Larry & Miller
 
-Hello my name is [enter name]. I am a student from [where are you from?]. The purpose of this repository is to practice development using version control. This work will help me begin to build a portfolio of skills and accomplishment that can be shared in the future.
+Hello my name is [Larry]. I am a student from [Largo, FLorida]. The purpose of this repository is to practice development using version control. This work will help me begin to build a portfolio of skills and accomplishment that can be shared in the future.
 
 <br>
 
