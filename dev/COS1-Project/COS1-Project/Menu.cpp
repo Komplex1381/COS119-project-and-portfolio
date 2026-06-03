@@ -1,7 +1,7 @@
 #include "Menu.h"
 #include <string>
 #include "Helper.h"
-#include <algorithm>
+//#include <algorithm>
 
 //Title screen with menu (Testing now but add to GameManager)
 void Menu::draw(int highScore)
@@ -74,7 +74,7 @@ MenuChoice Menu::getUserChoice()
 	 
 	
 	std::getline(std::cin, input);
-	//std::transform(input.begin(), input.end(), input.begin(), ::tolower);
+	//std::transform(input.begin(), input.end(), input.begin(), ::tolower); supposed to make lower case, need to test out
 
 	if (input == "1")
 	{

@@ -141,16 +141,20 @@
   <ItemGroup>
     <ClCompile Include="COS1-Project.cpp" />
     <ClCompile Include="Fruit.cpp" />
+    <ClCompile Include="Highscore.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="Map.cpp" />
+    <ClCompile Include="MapLoader.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Pellet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Fruit.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="Highscore.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="Map.h" />
+    <ClInclude Include="MapLoader.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="MenuChoice.h" />
     <ClInclude Include="Pellet.h" />

@@ -1,11 +1,13 @@
 #pragma once
 #include <iostream>
+#include "Helper.h"
+
 class Map
 {
 private:
 	int mRows;
 	int mCols;
-	int** grid;
+	int** grid = nullptr;
 
 	void mGrid() 
 	{
@@ -22,7 +24,7 @@ private:
 		{
 			for (int i = 0; i <  mRows; i++) 
 			{
-				delete[] grid;
+				delete[] grid[i];
 			}
 			delete[] grid;
 			grid = nullptr;
@@ -93,14 +95,14 @@ public:
 			{
 				switch(grid[i][j])
 				{
-				case 1:
-					std::cout << "#";
+				case 3:
+					std::cout << BLUE << "#";
 					break;
 				case 2:
-					std::cout << "O";
+					std::cout << YELLOW << "O";
 					break;
-				case 3:
-					std::cout << ".";
+				case 1:
+					std::cout << WHITE << ".";
 					break;
 				default:
 					std::cout << " ";
