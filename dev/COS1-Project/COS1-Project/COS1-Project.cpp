@@ -16,21 +16,27 @@ int main()
     Map level1 = MapLoader::loadMap("lvl2.txt");
     //Map level1 = MapLoader::loadMap("level1.txt");
 
-    level1.renderASCII();
+    //Not to make map bigger maybe change font size, research how.
+    //level1.renderASCII();
 
-    //gameMenu.draw(765430);
+    
+    
+    //gameMenu.draw2();
 
     while (!gameOver) 
     {
         
         //Draw
-        //gameMenu.draw(765430);
+        gameMenu.draw(700);
+        
         //Input
-
-       //Update & Collision detection
+        gameMenu.getUserChoice();
+        if (gameMenu.getUserChoice() == MenuChoice::Exit)
+            gameOver = true;
+        //Update & Collision detection MenuChoice::Exit
 
         //Draw?
-        //gameMenu.draw(765430);
+        gameMenu.draw(700);
     }
 }
 

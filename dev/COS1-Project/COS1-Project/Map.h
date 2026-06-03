@@ -113,5 +113,37 @@ public:
 		}
 	}
 
+	void renderASCII2(int scale = 1) const
+	{
+		for (int i = 0; i < mRows; i++)
+		{
+			for (int vRepeat = 0; vRepeat < scale; vRepeat++) 
+			{
+				for (int j = 0; j < mCols; j++)
+				{
+					for(int hRepeat = 0; hRepeat < scale; hRepeat++){
+						switch (grid[i][j])
+						{
+						case 3:
+							std::cout << BLUE << "#";
+							break;
+						case 2:
+							std::cout << YELLOW << "O";
+							break;
+						case 1:
+							std::cout << WHITE << ".";
+							break;
+						default:
+							std::cout << " ";
+							break;
+						}
+					}
+				}
+				std::cout << "\n";
+			}
+			
+		}
+	}
+
 };
 
