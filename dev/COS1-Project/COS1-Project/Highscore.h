@@ -36,25 +36,26 @@ public:
 		}
 	}
 	//Copy Assignment Operator for deep copy not shallow
-	Highscore& operator=(Highscore other)
+	Highscore& operator=(const Highscore& other)
 	{
 		if (this == &other)
 		{
 			return *this;
 		}
-		delete[] name;
+		delete[] this->name;
+		this->name = nullptr;
 
 		this->score = other.score;
 
 		if (other.name != nullptr)
 		{
 			size_t size = std::strlen(other.name) + 1;
-			name = new char[size];
-			strcpy_s(name, size, other.name);
+			this->name = new char[size];
+			strcpy_s(this->name, size, other.name);
 		}
 		else
 		{
-			name = nullptr;
+			this->name = nullptr;
 		}
 		return *this;
 	}

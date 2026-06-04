@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="COS1-Project.cpp" />
     <ClCompile Include="Fruit.cpp" />
+    <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Highscore.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="Map.cpp" />
@@ -150,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Fruit.h" />
+    <ClInclude Include="GameManager.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Highscore.h" />
     <ClInclude Include="Item.h" />

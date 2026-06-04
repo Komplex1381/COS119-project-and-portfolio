@@ -22,7 +22,7 @@ private:
 	{
 		if (grid != nullptr) 
 		{
-			for (int i = 0; i <  mRows; i++) 
+			for (int i = 0; i <  mRows; i++)
 			{
 				delete[] grid[i];
 			}
@@ -38,12 +38,12 @@ public:
 		mGrid();
 	}
 
-	~Map() 
+	~Map()
 	{
 		mClearGrid();
 	}
 
-	Map(const Map& other) : mRows(other.mRows), mCols(other.mCols) 
+	Map(const Map& other) : mRows(other.mRows), mCols(other.mCols)
 	{
 		mGrid();
 		for (int i = 0; i < mRows; i++) 
@@ -85,6 +85,25 @@ public:
 		{
 			grid[r][c] = type;
 		}
+	}
+
+	int getRows() const 
+	{
+		return mRows;
+	}
+
+	int getCols() const
+	{
+		return mCols;
+	}
+
+	int getTile(int r, int c)
+	{
+		if (r >= 0 && r < mRows && c >= 0 && c < mCols)
+		{
+			return grid[r][c];
+		}
+		return 3;
 	}
 
 	void renderASCII() const 
