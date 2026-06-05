@@ -2,6 +2,7 @@
 #include <string>
 #include "Helper.h"
 #include <conio.h> // for windows input
+#include <Windows.h>
 
 
 
@@ -15,10 +16,12 @@ void Menu::drawLine(const std::string& text, const std::string& textColor, const
 }
 
 //Title screen with menu (Testing now but add to GameManager)
-void Menu::drawMenu(int highScore)
+void Menu::drawMenu()
 {
-	//int highScore = 765430;
-	std::cout << "\033[2J\033[1;1H"; //clearscreen
+	COORD coord = { 0,0 };
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+
+	
 	std::cout << BLUE << "##########################################################\n"; //58
 	std::cout << "#                                                        #\n";
 
@@ -32,10 +35,10 @@ void Menu::drawMenu(int highScore)
 	std::cout << "##########################################################\n";
 	std::cout << "#                                                        #\n";
 
-	std::cout << BLUE << "#               " << (currentSelection == MenuChoice::Start ? YELLOW : WHITE) << "[1] START GAME" << BLUE << "                           #\n";
-	std::cout << "#               " << (currentSelection == MenuChoice::HighScores ? YELLOW : WHITE) << "[2] HIGH SCORES" << BLUE << "                          #\n";
-	std::cout << "#               " << (currentSelection == MenuChoice::Difficulty ? YELLOW : WHITE) << "[3] DIFFICULTY" << BLUE << "                           #\n";
-	std::cout << "#               " << (currentSelection == MenuChoice::Exit ? YELLOW : WHITE) << "[4] EXIT" << BLUE << "                                 #\n";
+	std::cout << BLUE << "#               " << (currentSelection == MenuChoice::Start ? YELLOW : WHITE) << "       START GAME" << BLUE << "                        #\n";
+	std::cout << "#               " << (currentSelection == MenuChoice::HighScores ? YELLOW : WHITE) << "       HIGH SCORES" << BLUE << "                       #\n";
+	std::cout << "#               " << (currentSelection == MenuChoice::Difficulty ? YELLOW : WHITE) << "       DIFFICULTY" << BLUE << "                        #\n";
+	std::cout << "#               " << (currentSelection == MenuChoice::Exit ? YELLOW : WHITE) << "       EXIT" << BLUE << "                              #\n";
 
 	
 
@@ -43,11 +46,16 @@ void Menu::drawMenu(int highScore)
 	std::cout << "##########################################################\n";
 	std::cout << "#                                                        #\n";
 	std::cout << "#                                                        #\n";
-	std::cout << "#                    "<< RED << "HIGH SCORE" << BLUE << "                          #\n";	
-	std::cout << "#                     " << WHITE << highScore << BLUE << "                              #\n";//score display needs to be fixed
+	std::cout << "#                    "<< RED << "   HIGH SCORE" << BLUE << "                       #\n";	
+	std::cout << "#                        " << WHITE << mScoretoShow << BLUE << "                               #\n";//score display needs to be fixed
 	std::cout << "#                                                        #\n";
 	std::cout << "##########################################################\n";
 	std::cout << RESET;
+}
+
+void Menu::setHighScore(int score)
+{
+	mScoretoShow = score;
 }
 
 //For testing ideas before adding to drawMenu
@@ -111,7 +119,9 @@ MenuChoice Menu::getUserChoice()
 			{
 				currentSelection = static_cast<MenuChoice>(static_cast<int>(currentSelection) - 1);
 			}
-			return currentSelection;
+			//return currentSelection;
+			drawMenu();
+			break;
 		case 's':
 		case 'S':
 			if (currentSelection == MenuChoice::Exit)
@@ -122,7 +132,9 @@ MenuChoice Menu::getUserChoice()
 			{
 				currentSelection = static_cast<MenuChoice>(static_cast<int>(currentSelection) + 1);
 			}
-			return currentSelection;
+			drawMenu();
+			break;
+			//return currentSelection; game was getting stuck because return here and above.
 		case 13:
 			playerSelection = true;
 			break;
@@ -130,6 +142,6 @@ MenuChoice Menu::getUserChoice()
 			break;
 		}		
 	}
-
+	return currentSelection;
 
 };

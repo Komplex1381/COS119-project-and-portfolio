@@ -79,7 +79,8 @@ public:
 			{
 
 				int tempScore = hs->score;
-				int nameLength = strlen(hs->name);
+				//int nameLength = strlen(hs->name);
+				int nameLength = (hs->name != nullptr) ? static_cast<int>(strlen(hs->name)) : 0;
 
 				fileOut.write(reinterpret_cast<char*>(&tempScore), sizeof(tempScore));
 				fileOut.write(reinterpret_cast<char*>(&nameLength), sizeof(nameLength));
@@ -107,18 +108,35 @@ public:
 				int tempScore = 0;
 				int tempLength = 0;
 
-				fileIn.read(reinterpret_cast<char*>(&tempScore), sizeof(tempScore));
-				fileIn.read(reinterpret_cast<char*>(&tempLength), sizeof(tempLength));
+				if (!fileIn.read(reinterpret_cast<char*>(&tempScore), sizeof(tempScore)) ||
+					!fileIn.read(reinterpret_cast<char*>(&tempLength), sizeof(tempLength))) 
+				{
+					break;
+				}
 
-
+				//fileIn.read(reinterpret_cast<char*>(&tempScore), sizeof(tempScore));
+				//fileIn.read(reinterpret_cast<char*>(&tempLength), sizeof(tempLength));
+								
 				Highscore* newScore = new Highscore();
 				newScore->score = tempScore;
 
-				newScore->name = new char[tempLength + 1];
+				if (tempLength > 0)
+				{
+					newScore->name = new char[tempLength + 1];
+
+					fileIn.read(newScore->name, tempLength);
+
+					newScore->name[tempLength] = '\0';
+				}
+				else
+				{
+					newScore->name = nullptr;
+				}
+				/*newScore->name = new char[tempLength + 1];
 
 				fileIn.read(newScore->name, tempLength);
 
-				newScore->name[tempLength] = '\0';
+				newScore->name[tempLength] = '\0';*/
 
 				highscores.push_back(newScore);
 

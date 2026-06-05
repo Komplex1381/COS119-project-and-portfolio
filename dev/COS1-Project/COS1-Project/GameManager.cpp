@@ -11,18 +11,18 @@ GameManager::GameManager() : currentMap(0,0)
 	mCurrentLevel = 1;
 	mLevelRun = false;
 
-	loadScores();
+	//loadScores();
 	
 }
 
 GameManager::~GameManager()
 {
-	saveSocres();
-	for (Highscore* hs : higheScores) 
+	saveScores();
+	for (Highscore* hs : highScores) 
 	{
 		delete hs;
 	}
-	higheScores.clear();
+	highScores.clear();
 }
 
 void GameManager::run()
@@ -39,10 +39,10 @@ void GameManager::run()
 			gameplayLoop();
 			break;
 		case GameState::HighScores:
-			handleHighScoreState();
+			//handleHighScoreState();
 			break;
 		case GameState::Difficulty:
-			handleDifficultyState();
+			//handleDifficultyState();
 			break;
 		case GameState::Exit:
 			mGameRun = false;
@@ -51,23 +51,43 @@ void GameManager::run()
 	}
 }
 
+int GameManager::getHighscore() const
+{
+	return mHighScore;
+}
+
 void GameManager::loadScores()
 {
-	higheScores = Highscore::loadHighscoresFromBinary(highscoreFilename);
-
-	if (!higheScores.empty()) 
+	//Clear memory first
+	for (Highscore* hs : highScores)
 	{
-		std::sort(higheScores.begin(), higheScores.end(), [](const Highscore* a, const Highscore* b)
+		delete hs;
+	}
+	//clear up highscores
+	highScores.clear();
+
+	//Load new scores
+	highScores = Highscore::loadHighscoresFromBinary(highscoreFilename);
+
+	if (!highScores.empty()) 
+	{
+		std::sort(highScores.begin(), highScores.end(), [](const Highscore* a, const Highscore* b)
 			{
 				return a->score > b->score;
 			});
-		mHighScore = higheScores[0]->score;
+		
+		mHighScore = highScores[0]->score;
 	}
+	else 
+	{
+		mHighScore = 0;
+	}
+	gameMenu.setHighScore(mHighScore);
 }
 
-void GameManager::saveSocres()
+void GameManager::saveScores()
 {
-	Highscore::saveHighscoresToBinary(highscoreFilename, higheScores);
+	Highscore::saveHighscoresToBinary(highscoreFilename, highScores);
 }
 
 void GameManager::updateHighScore(int finalScore)
@@ -75,30 +95,31 @@ void GameManager::updateHighScore(int finalScore)
 	if (finalScore > 0) 
 	{
 		Highscore* newEntry = new Highscore(finalScore, "Pac-Man");
-		higheScores.push_back(newEntry);
+		highScores.push_back(newEntry);
 
-		std::sort(higheScores.begin(), higheScores.end(), [](const Highscore* a, const Highscore* b)
+		std::sort(highScores.begin(), highScores.end(), [](const Highscore* a, const Highscore* b)
 			{
 				return a->score > b->score;
 			}); 
-		if (higheScores.size() > 5) 
+		if (highScores.size() > 5) 
 		{
-			delete higheScores.back();
-			higheScores.pop_back();
+			delete highScores.back();
+			highScores.pop_back();
 		}
-		mHighScore = higheScores[0]->score;
-		saveSocres();
+		mHighScore = highScores[0]->score;
+		gameMenu.setHighScore(mHighScore);
+		saveScores();
 
 	}
 }
 
 void GameManager::handleMenuState()
 {
-	gameMenu.drawMenu(mHighScore);
+	gameMenu.drawMenu();
 
 	MenuChoice choice = gameMenu.getUserChoice();
 
-	if (GetKeyState(VK_RETURN) & 0x8000) 
+	if (GetAsyncKeyState(VK_RETURN) & 0x8000)
 	{
 		switch(choice) 
 		{
@@ -120,6 +141,7 @@ void GameManager::handleMenuState()
 		//std::cout << "\033[2J\033[1;1H";
 		Sleep(200);
 	}
+	system("cls");
 }
 
 void GameManager::handleHighScoreState()
@@ -135,7 +157,11 @@ void GameManager::initialLevel()
 	mCurrentScore = 0;
 	mLevelRun = true;
 
-	currentMap = MapLoader::loadMap("lvl2.txt");
+	currentMap = MapLoader::loadMap("lvl1.txt");
+
+	fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
+	system("cls");
+	//std::cout << "\033[2J\033[1;1H";
 
 	//Pacman & ghost logic here
 }
@@ -143,7 +169,7 @@ void GameManager::initialLevel()
 void GameManager::gameplayLoop()
 {
 	initialLevel();
-	//std::cout << "\033[2J\033[1;1H"; //clearscreen
+	system("cls");
 
 	while (mLevelRun) 
 	{
@@ -155,10 +181,20 @@ void GameManager::gameplayLoop()
 
 		renderGame();
 
+		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) 
+		{
+			mLevelRun = false;
+			mCurrentGameState = GameState::Menu;
+		}
+
 		//Windows call
 		Sleep(100);
 	}
-	cleanLevel();
+	system("cls");
+	mCurrentGameState = GameState::Menu;
+	//cleanLevel();
+
+	
 }
 
 void GameManager::updateGame()
@@ -203,4 +239,26 @@ void GameManager::hideConsoleCursor() const
 	GetConsoleCursorInfo(out, &cursorInfo);
 	cursorInfo.bVisible = FALSE;
 	SetConsoleCursorInfo(out, &cursorInfo);
+}
+
+//Attempt to make game window map size(more research needed)
+void GameManager::fitConsoleToMap(int mapRows, int mapCols)
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hConsole == INVALID_HANDLE_VALUE) 
+	{
+		return;
+	}
+
+	short paddingWidth = 5;
+	short paddingHeight = 8;
+
+	short finalHeight = static_cast<short>(mapRows + paddingHeight);
+	short finalWidth = static_cast<short>(mapCols + paddingWidth);
+
+	COORD bufferSize = { finalWidth, finalHeight };
+	SetConsoleScreenBufferSize(hConsole, bufferSize);
+
+	SMALL_RECT windowSize = { 0,0, static_cast<short>(finalWidth - 1), static_cast<short>(finalHeight - 1) };
+	SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
 }

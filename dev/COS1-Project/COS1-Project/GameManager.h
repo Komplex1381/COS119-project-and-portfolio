@@ -24,11 +24,11 @@ private:
 	Menu gameMenu;
 	Map currentMap;
 
-	std::vector<Highscore*> higheScores;
+	std::vector<Highscore*> highScores;
 	const std::string highscoreFilename = "highscores.bin";
 
 	void loadScores();
-	void saveSocres();
+	void saveScores();
 	void updateHighScore(int finalScore);
 
 	void handleMenuState();
@@ -44,10 +44,12 @@ private:
 
 	void setCursorPosition(int x, int y) const;
 	void hideConsoleCursor() const;
+	void fitConsoleToMap(int mapRows, int mapCols);
 
 public:
 	GameManager();
 	~GameManager();
 	void run();
+	int getHighscore() const;
 };
 

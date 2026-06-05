@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Helper.h"
 
+
 class Map
 {
 private:
@@ -108,6 +109,8 @@ public:
 
 	void renderASCII() const 
 	{
+		
+
 		for (int i = 0; i < mRows; i++)
 		{
 			for (int j = 0; j < mCols; j++) 
