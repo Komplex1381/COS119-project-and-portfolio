@@ -44,7 +44,7 @@ Each week I will summarize my milestone activity and progress by writing a stand
 
 ### Week 1
 
-Replace this paragraph with your stand up for this week. Use the prompts above to summarize your most recent milestone activity and work.
+Week one started out with a grand idea that I quickly realized I needed to scale back in the planning phase due to time and my own knowledge base to ensure a successful program is created. I got my version control and environment set up. I planned out my overall project and what I needed to do and what I wanted to accomplish once the requirements have been met. Thanks to the planning I quickly realized what I didn't know and where to focus my research. I learned how to handle key input with windows.h and will continue to learn more about that. I was able to get the base of my Pacman game set up. For week 2 I will focus on getting the systems all working together and game running basic need to work level.
 
 ### Week 2
 
