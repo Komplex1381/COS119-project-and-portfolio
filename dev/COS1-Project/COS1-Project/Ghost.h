@@ -1,0 +1,32 @@
+#pragma once
+#include "GameCharacter.h"
+#include "Map.h"
+#include <windows.h>
+
+enum class GhostState 
+{
+    CHASE,
+    SCATTER,
+    EATEN,
+    FRIGHTENED
+};
+
+class Ghost :  public GameCharacter
+{
+private:
+    GhostState mState;
+    int mColor;
+
+public:
+    Ghost(int startRow, int startCol, double speed, int tileChar, int color);
+    virtual ~Ghost() override = default;
+
+    void draw() const override;
+    void updateAI(const Map& gameMap, int pacmanX, int pacmanY);
+    void setState(GhostState newState) 
+    {
+        mState = newState;
+    }
+
+};
+

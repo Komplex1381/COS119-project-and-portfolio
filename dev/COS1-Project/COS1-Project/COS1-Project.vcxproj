@@ -141,17 +141,23 @@
   <ItemGroup>
     <ClCompile Include="COS1-Project.cpp" />
     <ClCompile Include="Fruit.cpp" />
+    <ClCompile Include="GameCharacter.cpp" />
     <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="Ghost.cpp" />
     <ClCompile Include="Highscore.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="MapLoader.cpp" />
     <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="Pacman.cpp" />
     <ClCompile Include="Pellet.cpp" />
+    <ClCompile Include="SoundManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Fruit.h" />
+    <ClInclude Include="GameCharacter.h" />
     <ClInclude Include="GameManager.h" />
+    <ClInclude Include="Ghost.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Highscore.h" />
     <ClInclude Include="Item.h" />
@@ -159,7 +165,9 @@
     <ClInclude Include="MapLoader.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="MenuChoice.h" />
+    <ClInclude Include="Pacman.h" />
     <ClInclude Include="Pellet.h" />
+    <ClInclude Include="SoundManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

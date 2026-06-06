@@ -8,6 +8,9 @@
 #include "Item.h"
 #include "Fruit.h"
 #include "Helper.h"
+#include "Pacman.h"
+#include "Ghost.h"
+#include "SoundManager.h"
 
 enum class GameState { Menu, Start, HighScores, Difficulty, Exit };
 
@@ -20,6 +23,8 @@ private:
 	int mHighScore;
 	int mCurrentLevel;
 	bool mLevelRun;
+	Pacman* mPacman = nullptr;
+	std::vector<Ghost*> mGhosts;
 
 	Menu gameMenu;
 	Map currentMap;

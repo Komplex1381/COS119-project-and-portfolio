@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/LMiller-VersionControl.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "LMiller-VersionControl"
+              "title": "README"
             }
           }
         ]
@@ -185,18 +185,18 @@
   },
   "active": "884388a674fb9244",
   "lastOpenFiles": [
-    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.read.5.tlog",
+    "docs/LMiller-VersionControl.md",
+    "README.md",
+    "docs/README.md",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.read.2.tlog",
     "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-cvtres.write.1.tlog",
     "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-cvtres.read.1.tlog",
-    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-rc.write.1.tlog",
     "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-rc.read.1.tlog",
-    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-mt.write.1.tlog",
     "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-mt.read.1.tlog",
-    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.read.2.tlog",
-    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.read.4.tlog",
-    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.read.3.tlog",
+    "dev/COS1-Project/COS1-Project/x64/Debug/Pacman.obj",
     "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/unsuccessfulbuild",
-    "README.md",
-    "docs/LMiller-VersionControl.md"
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.25164.write.1.tlog",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.25164.read.1.tlog",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.25164.read.5.tlog"
   ]
 }

@@ -98,13 +98,20 @@ public:
 		return mCols;
 	}
 
-	int getTile(int r, int c)
+	int getTile(int r, int c) const
 	{
-		if (r >= 0 && r < mRows && c >= 0 && c < mCols)
+		/*if (r >= 0 && r < mRows && c >= 0 && c < mCols)
 		{
 			return grid[r][c];
 		}
-		return 3;
+		return 3;*/
+
+		if (r < 0 || r >= mRows || c < 0 || c < mCols)
+		{
+			return 3;
+		}
+		return grid[r][c];
+		
 	}
 
 	void renderASCII() const 

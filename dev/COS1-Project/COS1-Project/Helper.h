@@ -111,7 +111,7 @@ static void TitleC(const std::string& title, const std::string& borderColor, con
 {
 	
 	std::cout << borderColor << "===================================\n";
-	std::cout << "===\t" << textColor << title << borderColor << "\t===\n";
+	std::cout << "===\t    " << textColor << title << borderColor << "    \t===\n";
 	std::cout << "===================================\n\n" << RESET;
 
 }

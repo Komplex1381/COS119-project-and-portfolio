@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <iostream>
 
+
 GameManager::GameManager() : currentMap(0,0)
 {
 	mCurrentGameState = GameState::Menu;
@@ -11,12 +12,16 @@ GameManager::GameManager() : currentMap(0,0)
 	mCurrentLevel = 1;
 	mLevelRun = false;
 
-	//loadScores();
+	hideConsoleCursor();
+	loadScores();
+	gameMenu.setHighScore(mHighScore);
 	
 }
 
 GameManager::~GameManager()
 {
+	cleanLevel();
+
 	saveScores();
 	for (Highscore* hs : highScores) 
 	{
@@ -36,15 +41,17 @@ void GameManager::run()
 			handleMenuState();
 			break;
 		case GameState::Start:
+			initialLevel();
 			gameplayLoop();
 			break;
 		case GameState::HighScores:
-			//handleHighScoreState();
+			handleHighScoreState();
 			break;
 		case GameState::Difficulty:
-			//handleDifficultyState();
+			handleDifficultyState();
 			break;
 		case GameState::Exit:
+			saveScores();
 			mGameRun = false;
 			break;
 		}
@@ -138,7 +145,7 @@ void GameManager::handleMenuState()
 		default:
 			break;
 		}
-		//std::cout << "\033[2J\033[1;1H";
+		//pause game allow for input
 		Sleep(200);
 	}
 	system("cls");
@@ -146,10 +153,43 @@ void GameManager::handleMenuState()
 
 void GameManager::handleHighScoreState()
 {
+	system("cls");
+	Helper::TitleC("HIGH SCORE", WHITE, RED);
+	for (int i = 0; i < highScores.size(); i++) 
+	{
+		std::cout << i + 1 << ") " << highScores[i]->name << " " << highScores[i]->score << "\n";
+	}
+	std::cout << "Press ESC to return to Menu...";
+	while (mCurrentGameState == GameState::HighScores)
+	{
+		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+		{
+			mCurrentGameState = GameState::Menu;
+		}
+	}
+	//
+	
 }
 
 void GameManager::handleDifficultyState()
 {
+	system("cls");
+	Helper::TitleC("DIFFICULTY", WHITE, YELLOW);
+	std::cout << BLUE << "Please select Difficulty: \n" << RESET;
+	//This will change later once I get game running and add feature.
+	std::cout << "Easy\n";
+	std::cout << "Normal\n";
+	std::cout << "Hard\n\n";
+
+	std::cout << "Press ESC to return to Menu...";
+	while (mCurrentGameState == GameState::Difficulty)
+	{
+		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+		{
+			mCurrentGameState = GameState::Menu;
+		}
+	}
+	
 }
 
 void GameManager::initialLevel()
@@ -161,21 +201,32 @@ void GameManager::initialLevel()
 
 	fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
 	system("cls");
-	//std::cout << "\033[2J\033[1;1H";
+	
 
 	//Pacman & ghost logic here
+	mPacman = new Pacman(9, 7, 1.0);
+
+	mGhosts.push_back(new Ghost(8, 1, 1.0, 'G', 12));//Red
+	mGhosts.push_back(new Ghost(10, 1, 1.0, 'G', 11));//Cyan
+	mGhosts.push_back(new Ghost(7, 1, 1.0, 'G', 13));//Pink
+	mGhosts.push_back(new Ghost(11, 1, 1.0, 'G', 14));//Orange
+
+	SoundManager::playSFX("StartMusic.wav");
+
+	Sleep(4200);
+
 }
 
 void GameManager::gameplayLoop()
 {
-	initialLevel();
+	//initialLevel();
 	system("cls");
 
 	while (mLevelRun) 
 	{
 		//Player input
-
-		//updateGame();
+		mPacman->handleInput();
+		updateGame();
 
 		//checkCollisions();
 
@@ -187,12 +238,12 @@ void GameManager::gameplayLoop()
 			mCurrentGameState = GameState::Menu;
 		}
 
-		//Windows call
+		
 		Sleep(100);
 	}
 	system("cls");
 	mCurrentGameState = GameState::Menu;
-	//cleanLevel();
+	cleanLevel();
 
 	
 }
@@ -200,6 +251,10 @@ void GameManager::gameplayLoop()
 void GameManager::updateGame()
 {
 	//player & ghost update here
+	if (mPacman != nullptr) 
+	{
+		mPacman->update(currentMap);
+	}
 }
 
 void GameManager::renderGame()
@@ -212,6 +267,19 @@ void GameManager::renderGame()
 	currentMap.renderASCII();
 
 	//Draw player on map
+	if (mPacman != nullptr) 
+	{
+		mPacman->draw();
+	}
+
+	//Draw Ghost
+	for (const Ghost* ghost : mGhosts) 
+	{
+		if (ghost != nullptr) 
+		{
+			ghost->draw();
+		}
+	}
 
 	//Draw HUD Footer
 }
@@ -223,6 +291,14 @@ void GameManager::checkCollisions()
 void GameManager::cleanLevel()
 {
 	//Delete all pointers
+	delete mPacman;
+	mPacman = nullptr;
+
+	for (Ghost* ghost : mGhosts) 
+	{
+		delete ghost;
+	}
+	mGhosts.clear();
 }
 
 //Windows code for Cursor
