@@ -1,0 +1,202 @@
+{
+  "main": {
+    "id": "5a80c621cccc3996",
+    "type": "split",
+    "children": [
+      {
+        "id": "e13c930db5ed5021",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "884388a674fb9244",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "README.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "README"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3fd5fd7e4258681a",
+    "type": "split",
+    "children": [
+      {
+        "id": "d1b57ce6abbe084c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c90e15eb05ed5a8f",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "0d404160353c11ca",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "f1a240f61b16ccb9",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "67e9bcf43345387d",
+    "type": "split",
+    "children": [
+      {
+        "id": "0cefe4c99f3c82eb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "11bb81aebe51fee6",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docs/LMiller-VersionControl.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for LMiller-VersionControl"
+            }
+          },
+          {
+            "id": "c4ff4808eac39753",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docs/LMiller-VersionControl.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from LMiller-VersionControl"
+            }
+          },
+          {
+            "id": "3ab2cd91dd7e5f98",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "90473ca220b4e3e6",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "f6abdf19fcb61466",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docs/LMiller-VersionControl.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of LMiller-VersionControl"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "884388a674fb9244",
+  "lastOpenFiles": [
+    "docs/LMiller-VersionControl.md",
+    "README.md",
+    "docs/README.md",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.read.2.tlog",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-cvtres.write.1.tlog",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-cvtres.read.1.tlog",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-rc.read.1.tlog",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-mt.read.1.tlog",
+    "dev/COS1-Project/COS1-Project/x64/Debug/Pacman.obj",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/unsuccessfulbuild",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.25164.write.1.tlog",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.25164.read.1.tlog",
+    "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link.25164.read.5.tlog"
+  ]
+}
