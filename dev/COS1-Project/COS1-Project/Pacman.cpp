@@ -6,9 +6,9 @@ Pacman::Pacman(int startRow, int startCol, double speed) : GameCharacter(startRo
 
 void Pacman::draw() const
 {
-	/*HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	COORD coord = { static_cast<short>(getX()), static_cast<short>(getY()) };
-	SetConsoleCursorPosition(hConsole, coord);*/
+	SetConsoleCursorPosition(hConsole, coord);
 
 	std::cout << YELLOW << static_cast<char>(getTileChar()) << RESET;
 }

@@ -272,7 +272,7 @@ void GameManager::updateGame()
 	//player & ghost update here
 	if (mPacman != nullptr)
 	{
-		setCursorPosition(mPacman->getX(), mPacman->getY() +2);
+		setCursorPosition(mPacman->getX(), mPacman->getY());
 		std::cout << " ";
 	}
 
@@ -281,7 +281,7 @@ void GameManager::updateGame()
 	{
 		if (ghost != nullptr)
 		{
-			setCursorPosition(ghost->getX(), ghost->getY() + 2);
+			setCursorPosition(ghost->getX(), ghost->getY());
 			char tileToShow = currentMap.getTile(ghost->getY(), ghost->getX());
 			if (tileToShow == 1) 
 			{
@@ -312,18 +312,18 @@ void GameManager::renderGame()
 	setCursorPosition(0,0);
 
 	//Draw HUD Header
-	std::cout << WHITE << "Score: " << YELLOW << mCurrentScore;
+	/*std::cout << WHITE << "Score: " << YELLOW << mCurrentScore;
 	setCursorPosition(mapCols / 2, 0);
 	std::cout << WHITE << "HIGH SCORE: " << RED << mHighScore << "\n";
-	std::cout << BLUE << std::string(mapCols, '=') << "\n" << RESET;
+	std::cout << BLUE << std::string(mapCols, '=') << "\n" << RESET;*/
 	//Render Map
-	setCursorPosition(0,2);
+	//setCursorPosition(0,2);
 	currentMap.renderASCII();
 
 	//Draw player on map
 	if (mPacman != nullptr) 
 	{
-		setCursorPosition(mPacman->getX(), mPacman->getY() + 2);
+		setCursorPosition(mPacman->getX(), mPacman->getY());
 		mPacman->draw();
 	}
 
@@ -332,13 +332,13 @@ void GameManager::renderGame()
 	{
 		if (ghost != nullptr) 
 		{
-			setCursorPosition(ghost->getX(), ghost->getY() + 2);
+			setCursorPosition(ghost->getX(), ghost->getY());
 			ghost->draw();
 		}
 	}
 
 	//Draw HUD Footer
-	int BottumHud = mapRows + 2;
+	/*int BottumHud = mapRows + 2;
 	setCursorPosition(0, BottumHud);	
 	std::cout << BLUE << std::string(mapCols, '=') << "\n" << RESET;
 	setCursorPosition(0, BottumHud + 1);
@@ -352,7 +352,7 @@ void GameManager::renderGame()
 
 	std::cout << WHITE << "           ";
 	setCursorPosition(mapCols - 15, BottumHud + 1);
-	std::cout << YELLOW << "FRUIT: " << RED << "%" << RESET << "    \n";
+	std::cout << YELLOW << "FRUIT: " << RED << "%" << RESET << "    \n";*/
 
 }
 
