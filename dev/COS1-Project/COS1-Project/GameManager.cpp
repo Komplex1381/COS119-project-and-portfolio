@@ -140,6 +140,7 @@ void GameManager::handleMenuState()
 			mCurrentGameState = GameState::Difficulty;
 			break;
 		case MenuChoice::Exit:
+			saveScores();
 			mCurrentGameState = GameState::Exit;
 			break;
 		default:
@@ -262,6 +263,7 @@ void GameManager::gameplayLoop()
 	}
 	system("cls");
 	mCurrentGameState = GameState::Menu;
+	updateHighScore(mCurrentScore);
 	cleanLevel();
 
 	
@@ -371,14 +373,14 @@ void GameManager::checkCollisions()
 	{
 		currentMap.setTile(pacY, pacX, 0);
 
-		//mCurrentScore += 10;
+		mCurrentScore += 10;
 
 		SoundManager::playSFX("Eating.wav");
 	}
 	else if (currentTile == 2)
 	{
 		currentMap.setTile(pacY, pacX, 0);
-		//mCurrentScore += 50;
+		mCurrentScore += 50;
 	}
 
 	//Ghost Collision
