@@ -23,6 +23,7 @@ private:
 	int mHighScore;
 	int mCurrentLevel;
 	bool mLevelRun;
+	bool mFullscreen = false;
 	Pacman* mPacman = nullptr;
 	std::vector<Ghost*> mGhosts;
 
@@ -50,6 +51,8 @@ private:
 	void setCursorPosition(int x, int y) const;
 	void hideConsoleCursor() const;
 	void fitConsoleToMap(int mapRows, int mapCols);
+
+	void setConsoleFullscreen(bool fullscreen);
 
 public:
 	GameManager();

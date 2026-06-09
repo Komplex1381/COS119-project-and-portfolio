@@ -9,64 +9,20 @@ class Highscore
 private:
 public:
 	int score;
-	char* name;
+	std::string name;
 
 	//Default
-	Highscore() : score(0), name(nullptr) {}
+	Highscore() : score(0), name("") {}
+
 	//Overloaded
 	Highscore(int score, const std::string& variable)
-		: score(score) {
-		size_t size = variable.length() + 1;
-		name = new char[size];
-		strcpy_s(name, size, variable.c_str());
-	}
-	//Copy
-	Highscore(const Highscore& other)
-		: score(other.score)
-	{
-		if (other.name != nullptr)
-		{
-			size_t size = std::strlen(other.name) + 1;
-			name = new char[size];
-			strcpy_s(name, size, other.name);
-		}
-		else
-		{
-			name = nullptr;
-		}
-	}
-	//Copy Assignment Operator for deep copy not shallow
-	Highscore& operator=(const Highscore& other)
-	{
-		if (this == &other)
-		{
-			return *this;
-		}
-		delete[] this->name;
-		this->name = nullptr;
-
-		this->score = other.score;
-
-		if (other.name != nullptr)
-		{
-			size_t size = std::strlen(other.name) + 1;
-			this->name = new char[size];
-			strcpy_s(this->name, size, other.name);
-		}
-		else
-		{
-			this->name = nullptr;
-		}
-		return *this;
-	}
-	//Destructor
-	~Highscore()
-	{
-		delete[] name;
-	}
+		: score(score), name(variable) {
+		
+	}	
+	
 
 	//Save Highscore
-	static void saveHighscoresToBinary(const std::string& filename, std::vector<Highscore*>& highscores)
+	static void saveHighscoresToBinary(const std::string& filename, const std::vector<Highscore*>& highscores)
 	{
 		std::ofstream fileOut(filename, std::ios_base::binary);
 		if (fileOut.is_open())
@@ -78,13 +34,19 @@ public:
 			for (const Highscore* hs : highscores)
 			{
 
-				int tempScore = hs->score;
-				//int nameLength = strlen(hs->name);
-				int nameLength = (hs->name != nullptr) ? static_cast<int>(strlen(hs->name)) : 0;
+				if (hs != nullptr)
+				{
+					int tempScore = hs->score;
+					int nameLength = static_cast<int>(hs->name.length());
 
-				fileOut.write(reinterpret_cast<char*>(&tempScore), sizeof(tempScore));
-				fileOut.write(reinterpret_cast<char*>(&nameLength), sizeof(nameLength));
-				fileOut.write(hs->name, nameLength);
+					fileOut.write(reinterpret_cast<char*>(&tempScore), sizeof(tempScore));
+					fileOut.write(reinterpret_cast<char*>(&nameLength), sizeof(nameLength));
+
+					if (nameLength > 0)
+					{
+						fileOut.write(hs->name.c_str(), nameLength);
+					}
+				}
 			}
 			fileOut.close();
 		}
@@ -114,8 +76,7 @@ public:
 					break;
 				}
 
-				//fileIn.read(reinterpret_cast<char*>(&tempScore), sizeof(tempScore));
-				//fileIn.read(reinterpret_cast<char*>(&tempLength), sizeof(tempLength));
+				
 								
 				Highscore* newScore = new Highscore();
 				newScore->score = tempScore;
@@ -124,19 +85,9 @@ public:
 				{
 					newScore->name = new char[tempLength + 1];
 
-					fileIn.read(newScore->name, tempLength);
-
-					newScore->name[tempLength] = '\0';
-				}
-				else
-				{
-					newScore->name = nullptr;
-				}
-				/*newScore->name = new char[tempLength + 1];
-
-				fileIn.read(newScore->name, tempLength);
-
-				newScore->name[tempLength] = '\0';*/
+					fileIn.read(&newScore->name[0], tempLength);
+					
+				}				
 
 				highscores.push_back(newScore);
 

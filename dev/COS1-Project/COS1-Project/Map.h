@@ -7,80 +7,24 @@ class Map
 {
 private:
 	int mRows;
-	int mCols;
-	int** grid = nullptr;
-
-	void mGrid() 
-	{
-		grid = new int*[mRows];
-		for (int i = 0; i < mRows; i++) 
-		{
-			grid[i] = new int [mCols] {0};
-		}
-	}
-
-	void mClearGrid() 
-	{
-		if (grid != nullptr) 
-		{
-			for (int i = 0; i <  mRows; i++)
-			{
-				delete[] grid[i];
-			}
-			delete[] grid;
-			grid = nullptr;
-		}
-	}
+	int mCols;	
+	std::vector<std::vector<int>> grid;
 
 public:	
 
-	Map(int rows, int cols)	: mRows(rows), mCols(cols)
+	int pacmanX = 0;
+	int pacmanY = 0;
+	int fruitX = 0;
+	int fruitY = 0;
+	std::vector<int> ghostX;
+	std::vector<int> ghostY;
+
+	Map(int rows, int cols)	: mRows(rows), mCols(cols), grid(rows, std::vector<int>(cols, 0))
 	{
-		mGrid();
-	}
+		
+	}	
 
-	~Map()
-	{
-		mClearGrid();
-	}
-
-	Map(const Map& other) : mRows(other.mRows), mCols(other.mCols)
-	{
-		mGrid();
-		for (int i = 0; i < mRows; i++) 
-		{
-			for (int j = 0; j < mCols; j++) 
-			{
-				grid[i][j] = other.grid[i][j];
-			}
-		}
-	}
-
-	Map& operator=(const Map& other) 
-	{
-		if (this == &other) 
-		{
-			return *this;
-		}
-
-		mClearGrid();
-
-		mRows = other.mRows;
-		mCols = other.mCols;
-		mGrid();
-
-		for (int i = 0; i < mRows; i++) 
-		{
-			for (int j = 0; j < mCols; j++) 
-			{
-				grid[i][j] = other.grid[i][j];
-			}
-		}
-
-		return *this;
-	}
-
-	void setTile(int r, int c, int type) 
+	void setTile(int r, int c, char type) 
 	{
 		if (r >= 0 && r < mRows && c >= 0 && c < mCols)
 		{
@@ -98,20 +42,21 @@ public:
 		return mCols;
 	}
 
-	int getTile(int r, int c) const
+	char getTile(int r, int c) const
 	{
-		/*if (r >= 0 && r < mRows && c >= 0 && c < mCols)
+		if (r < 0 || r >= mRows || c < 0 || c >= mCols)
 		{
-			return grid[r][c];
+			return '#';
 		}
-		return 3;*/
-
-		if (r < 0 || r >= mRows || c < 0 || c < mCols)
-		{
-			return 3;
-		}
-		return grid[r][c];
+		return static_cast<char>(grid[r][c]);
 		
+	}
+
+	bool canMove(int x, int y) 
+	{
+		char tile = getTile(y, x);
+
+		return (tile != 3);
 	}
 
 	void renderASCII() const 
@@ -124,6 +69,9 @@ public:
 			{
 				switch(grid[i][j])
 				{
+				case 4:
+					std::cout << WHITE << "-";
+					break; 
 				case 3:
 					std::cout << BLUE << "#";
 					break;

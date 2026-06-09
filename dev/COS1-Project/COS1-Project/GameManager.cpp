@@ -166,8 +166,11 @@ void GameManager::handleHighScoreState()
 		{
 			mCurrentGameState = GameState::Menu;
 		}
+		Sleep(30);
 	}
 	//
+	system("cls");
+	Sleep(10);
 	
 }
 
@@ -189,6 +192,7 @@ void GameManager::handleDifficultyState()
 			mCurrentGameState = GameState::Menu;
 		}
 	}
+	Sleep(10);
 	
 }
 
@@ -196,20 +200,22 @@ void GameManager::initialLevel()
 {
 	mCurrentScore = 0;
 	mLevelRun = true;
-
-	currentMap = MapLoader::loadMap("lvl1.txt");
+	//load map
+	currentMap = MapLoader::loadMap("lvl2.txt");
 
 	fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
 	system("cls");
-	
+	//currentMap.renderASCII();
 
 	//Pacman & ghost logic here
-	mPacman = new Pacman(9, 7, 1.0);
+	mPacman = new Pacman(currentMap.pacmanX, currentMap.pacmanY, 0.5);
 
-	mGhosts.push_back(new Ghost(8, 1, 1.0, 'G', 12));//Red
-	mGhosts.push_back(new Ghost(10, 1, 1.0, 'G', 11));//Cyan
-	mGhosts.push_back(new Ghost(7, 1, 1.0, 'G', 13));//Pink
-	mGhosts.push_back(new Ghost(11, 1, 1.0, 'G', 14));//Orange
+	int colors[] = { 12,11,13,14 };
+	for (int i = 0; i < currentMap.ghostX.size() && i < 4; i++) 
+	{
+		mGhosts.push_back(new Ghost(currentMap.ghostX[i], currentMap.ghostY[i], 1.0, 'G', colors[i]));
+	}
+	
 
 	SoundManager::playSFX("StartMusic.wav");
 
@@ -228,16 +234,29 @@ void GameManager::gameplayLoop()
 		mPacman->handleInput();
 		updateGame();
 
-		//checkCollisions();
+		if (GetAsyncKeyState(VK_F11) & 0x8000)
+		{
+			//flip variable
+			mFullscreen = !mFullscreen;
 
-		renderGame();
+			setConsoleFullscreen(mFullscreen);
+
+			if (!mFullscreen) 
+			{
+				fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
+			}
+			system("cls");
+			Sleep(250);
+		}
+		checkCollisions();
+		
 
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) 
 		{
 			mLevelRun = false;
 			mCurrentGameState = GameState::Menu;
 		}
-
+		renderGame();
 		
 		Sleep(100);
 	}
@@ -251,7 +270,35 @@ void GameManager::gameplayLoop()
 void GameManager::updateGame()
 {
 	//player & ghost update here
-	if (mPacman != nullptr) 
+	if (mPacman != nullptr)
+	{
+		setCursorPosition(mPacman->getX(), mPacman->getY() +2);
+		std::cout << " ";
+	}
+
+	//Draw Ghost
+	for (const Ghost* ghost : mGhosts)
+	{
+		if (ghost != nullptr)
+		{
+			setCursorPosition(ghost->getX(), ghost->getY() + 2);
+			char tileToShow = currentMap.getTile(ghost->getY(), ghost->getX());
+			if (tileToShow == 1) 
+			{
+				std::cout << WHITE << ".";
+			}
+			else if (tileToShow == 2) 
+			{
+				std::cout << YELLOW << "O";
+			}
+			else 
+			{
+				std::cout << " ";
+			}
+		}
+	}
+
+	if (mPacman != nullptr)
 	{
 		mPacman->update(currentMap);
 	}
@@ -259,16 +306,24 @@ void GameManager::updateGame()
 
 void GameManager::renderGame()
 {
+	int mapRows = currentMap.getRows();
+	int mapCols = currentMap.getCols();
+
 	setCursorPosition(0,0);
 
 	//Draw HUD Header
-	
+	std::cout << WHITE << "Score: " << YELLOW << mCurrentScore;
+	setCursorPosition(mapCols / 2, 0);
+	std::cout << WHITE << "HIGH SCORE: " << RED << mHighScore << "\n";
+	std::cout << BLUE << std::string(mapCols, '=') << "\n" << RESET;
 	//Render Map
+	setCursorPosition(0,2);
 	currentMap.renderASCII();
 
 	//Draw player on map
 	if (mPacman != nullptr) 
 	{
+		setCursorPosition(mPacman->getX(), mPacman->getY() + 2);
 		mPacman->draw();
 	}
 
@@ -277,15 +332,96 @@ void GameManager::renderGame()
 	{
 		if (ghost != nullptr) 
 		{
+			setCursorPosition(ghost->getX(), ghost->getY() + 2);
 			ghost->draw();
 		}
 	}
 
 	//Draw HUD Footer
+	int BottumHud = mapRows + 2;
+	setCursorPosition(0, BottumHud);	
+	std::cout << BLUE << std::string(mapCols, '=') << "\n" << RESET;
+	setCursorPosition(0, BottumHud + 1);
+	std::cout << WHITE << "LIVES: ";
+	
+	int totalLives = (mPacman != nullptr) ? mPacman->getLives() : 0;
+	for (int i = 0; i < totalLives; i++) 
+	{
+		std::cout << YELLOW << "C " << RESET;
+	}
+
+	std::cout << WHITE << "           ";
+	setCursorPosition(mapCols - 15, BottumHud + 1);
+	std::cout << YELLOW << "FRUIT: " << RED << "%" << RESET << "    \n";
+
 }
 
 void GameManager::checkCollisions()
 {
+	if (mPacman == nullptr) 
+	{
+		return;
+	}
+	int pacX = mPacman->getX();
+	int pacY = mPacman->getY();
+	char currentTile = currentMap.getTile(pacY,pacX);
+
+	//Pellet munch
+	if (currentTile == 1)
+	{
+		currentMap.setTile(pacY, pacX, 0);
+
+		//mCurrentScore += 10;
+
+		SoundManager::playSFX("Eating.wav");
+	}
+	else if (currentTile == 2)
+	{
+		currentMap.setTile(pacY, pacX, 0);
+		//mCurrentScore += 50;
+	}
+
+	//Ghost Collision
+	for (Ghost* ghost : mGhosts) 
+	{
+		if (ghost != nullptr) 
+		{
+			int ghostX = ghost->getX();
+			int ghostY = ghost->getY();
+
+			if (pacX == ghost->getX() && pacY == ghost->getY())
+			{
+				mPacman->decreaseLives();
+				SoundManager::playSFX("Fail.wav");
+
+				if (mPacman->getLives() <= 0) 
+				{
+					updateHighScore(mCurrentScore);
+					mLevelRun = false;
+					mCurrentGameState = GameState::Menu;
+				}
+				else 
+				{
+					mPacman->setX(currentMap.pacmanX);
+					mPacman->setY(currentMap.pacmanY);
+					mPacman->setCurDirection(Direction::NONE);
+					mPacman->setNextDirection(Direction::NONE);
+
+					for (int i = 0; i < mGhosts.size(); i++) 
+					{
+						if (mGhosts[i] != nullptr) 
+						{
+							mGhosts[i]->setX(currentMap.ghostX[i]);
+							mGhosts[i]->setY(currentMap.ghostY[i]);
+						}
+					}
+					system("cls");
+					Sleep(1000);
+				}
+				break;
+			}
+		}
+	}
 }
 
 void GameManager::cleanLevel()
@@ -317,7 +453,7 @@ void GameManager::hideConsoleCursor() const
 	SetConsoleCursorInfo(out, &cursorInfo);
 }
 
-//Attempt to make game window map size(more research needed)
+//Attempt to make game window map size(updated because afer checking again I was doing the function wrong, I need to also buffer the window as well as buffer)
 void GameManager::fitConsoleToMap(int mapRows, int mapCols)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -326,15 +462,42 @@ void GameManager::fitConsoleToMap(int mapRows, int mapCols)
 		return;
 	}
 
+	//Space for Hud
 	short paddingWidth = 5;
 	short paddingHeight = 8;
 
-	short finalHeight = static_cast<short>(mapRows + paddingHeight);
 	short finalWidth = static_cast<short>(mapCols + paddingWidth);
-
+	short finalHeight = static_cast<short>(mapRows + paddingHeight);
+	
+	//Keeps window from exceeding desktop
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	if (GetConsoleScreenBufferInfo(hConsole, &csbi)) 
+	{
+		if (finalWidth > csbi.dwMaximumWindowSize.X) finalWidth = csbi.dwMaximumWindowSize.X;
+		if (finalHeight > csbi.dwMaximumWindowSize.Y) finalHeight = csbi.dwMaximumWindowSize.Y;
+	}
+	//Shrinks window size
+	SMALL_RECT minimalWin = { 0,0, 1,1 };
+	SetConsoleWindowInfo(hConsole, TRUE, &minimalWin);
+	//Resize the screen buffer
 	COORD bufferSize = { finalWidth, finalHeight };
 	SetConsoleScreenBufferSize(hConsole, bufferSize);
-
+	//Expand the view window
 	SMALL_RECT windowSize = { 0,0, static_cast<short>(finalWidth - 1), static_cast<short>(finalHeight - 1) };
 	SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
 }
+
+void GameManager::setConsoleFullscreen(bool fullscreen)
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hConsole == INVALID_HANDLE_VALUE)
+	{
+		return;
+	}
+
+	DWORD flags = fullscreen ? CONSOLE_FULLSCREEN_MODE : CONSOLE_WINDOWED_MODE;
+	COORD newSize;
+
+	SetConsoleDisplayMode(hConsole, flags, &newSize);
+}
+
