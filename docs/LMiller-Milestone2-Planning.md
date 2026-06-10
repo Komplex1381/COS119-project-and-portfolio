@@ -94,21 +94,9 @@ How will you make your program easier to use this week?
 →   Add the memory leak detection to code.
   
 - Improved menu/navigation:   
-→   Selection is highlighted so user knows current selection.
+→   Selection is highlighted so user knows current selection. refactor my map to use vectors for improved resizing and so on.
   
 ---
-## 🎯 Usability Improvements  
-  
-How will you make your program easier to use this week?  
-  
-- Clearer prompts:   
-→   Not a prompt but improve map visibility.
-  
-- Better error handling:   
-→   
-  
-- Improved menu/navigation:   
-→   refactor my map to use vectors for improved resizing and so on.
   
 ---
 ## ⚠️ Potential Challenges  

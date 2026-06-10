@@ -27,6 +27,11 @@ private:
 	bool mFullscreen = false;
 	Pacman* mPacman = nullptr;
 	std::vector<Ghost*> mGhosts;
+	int mFruitTimer;
+	bool mShowFruit;
+
+	const int mSpawnFruit = 100;
+	const int mFruitVanish = 100;
 
 	Menu gameMenu;
 	Map currentMap;
@@ -48,7 +53,7 @@ private:
 	void renderGame();
 	void checkCollisions();
 	void cleanLevel();
-	//double calculateDistance(double x1, double y1, double x2, double y2);
+	
 
 	void setCursorPosition(int x, int y) const;
 	void hideConsoleCursor() const;

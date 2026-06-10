@@ -69,6 +69,9 @@ public:
 			{
 				switch(grid[i][j])
 				{
+				case 5:
+					std::cout << RED << "%";
+					break;
 				case 4:
 					std::cout << WHITE << "-";
 					break; 

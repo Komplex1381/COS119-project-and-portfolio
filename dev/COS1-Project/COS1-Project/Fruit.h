@@ -17,7 +17,8 @@ public:
 	//Fruit eaten
 	void eaten() override 
 	{
-		std::cout << Item::getPoints(); //not sure if this works the way I want yet.
+		//std::cout << Item::getPoints(); //not sure if this works the way I want yet.
+		std::cout << "+100pts";
 	}
 };
 

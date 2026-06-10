@@ -114,10 +114,20 @@ void Pacman::update(const Map& gameMap)
 
 	nextTile = gameMap.getTile(nextY, nextX);
 
-	if (getNextDirection() != Direction::NONE && nextTile != 3)
+	/*if (getNextDirection() != Direction::NONE && nextTile != 3)
 	{
 		setX(nextX);
 		setY(nextY);		
+	}
+	else
+	{
+		setCurDirection(Direction::NONE);
+	}*/
+
+	if (nextTile != 3)
+	{
+		setX(nextX);
+		setY(nextY);
 	}
 	else
 	{

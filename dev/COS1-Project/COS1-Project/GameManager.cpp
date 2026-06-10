@@ -203,6 +203,7 @@ void GameManager::initialLevel()
 	ConsoleWindow::initialize(L"PAC-MAN P&P Edition", 80, 80);
 	mCurrentScore = 0;
 	mLevelRun = true;
+	mFruitTimer = 0;
 	//load map
 	currentMap = MapLoader::loadMap("lvl2.txt");
 
@@ -234,6 +235,30 @@ void GameManager::gameplayLoop()
 
 	while (mLevelRun) 
 	{
+		//Fruit timer
+		mFruitTimer++;
+
+		if (!mShowFruit && mFruitTimer >= mSpawnFruit) 
+		{
+			currentMap.setTile(currentMap.fruitY, currentMap.fruitX, 5);
+			mShowFruit = true;
+			mFruitTimer = 0;
+
+			setCursorPosition(currentMap.fruitX, currentMap.fruitY);
+			std::cout << RED << "%" << RESET;
+		}
+		else if (mShowFruit && mFruitTimer >= mFruitVanish) 
+		{
+			if (currentMap.getTile(currentMap.fruitY, currentMap.fruitY) ==5) 
+			{
+				currentMap.setTile(currentMap.fruitY, currentMap.fruitX, 0);
+				setCursorPosition(currentMap.fruitX, currentMap.fruitY);
+				std::cout << " ";
+			}
+			mShowFruit = false;
+			mFruitTimer = 0;
+		}
+
 		//Player input
 		mPacman->handleInput();
 		updateGame();
@@ -295,6 +320,14 @@ void GameManager::updateGame()
 			else if (tileToShow == 2) 
 			{
 				std::cout << YELLOW << "O";
+			}
+			else if (tileToShow == 4)
+			{
+				std::cout << WHITE << "-";
+			}
+			else if (tileToShow == 5)
+			{
+				std::cout << RED << "%";
 			}
 			else 
 			{
@@ -395,14 +428,27 @@ void GameManager::checkCollisions()
 
 		mCurrentScore += 10;
 		//Needs to display @ pacman x and y
+		setCursorPosition(pacX, pacY);
 		pellet.eaten();
 
 		SoundManager::playSFX("Eating.wav");
 	}
-	else if (currentTile == 2)
+	else if (currentTile == 2) //POWER Pellet
 	{
 		currentMap.setTile(pacY, pacX, 0);
 		mCurrentScore += 50;
+	}
+	else if (currentTile == 5)
+	{
+		Fruit cherry("Cherry", 100);
+		setCursorPosition(pacX, pacY);
+		cherry.eaten();
+
+		mCurrentScore += cherry.getPoints();
+		currentMap.setTile(pacY, pacX, 0);
+
+		mShowFruit = false;
+		mFruitTimer = 0;
 	}
 
 	//Ghost Collision

@@ -98,11 +98,12 @@ void Ghost::updateAI(const Map& gameMap, int pacmanX, int pacmanY)
 		//up and down boundries
 		if (checkY < 0)
 		{
-			checkY = 0;
+			checkY = gameMap.getRows() - 1;
+			
 		}
 		else if (checkY >= gameMap.getCols())
 		{
-			checkY = gameMap.getRows() - 1;
+			checkY = 0;
 		}
 
 		//Wall restriction

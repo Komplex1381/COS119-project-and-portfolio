@@ -70,7 +70,7 @@ Map MapLoader::loadMap(const std::string& filename)
                         newMap.ghostX.push_back(col);
                         newMap.ghostY.push_back(currentRow);
                     }
-                    else if (ch == 'F') 
+                    else if (ch == '%') 
                     {
                         newMap.fruitX = col;
                         newMap.fruitY = currentRow;
