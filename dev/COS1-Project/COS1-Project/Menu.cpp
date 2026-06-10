@@ -9,7 +9,7 @@
 void Menu::drawLine(const std::string& text, const std::string& textColor, const std::string& borderColor) const
 {
 	int totalWidth = 56;
-	int padding = totalWidth - static_cast<int>(text.length());
+	int padding = totalWidth - static_cast<int>(text.length() + 6);
 
 	std::cout << borderColor << "#\t\t    " << textColor << text;
 	std::cout << std::string(padding, ' ') << borderColor << " #\n";
@@ -45,12 +45,14 @@ void Menu::drawMenu()
 	std::cout << "#                                                        #\n";
 	std::cout << "##########################################################\n";
 	std::cout << "#                                                        #\n";
-	std::cout << "#                                                        #\n";
+	std::cout << "#                                                        #\n";	
 	std::cout << "#                    "<< RED << "   HIGH SCORE" << BLUE << "                       #\n";	
-	std::cout << "#                        " << WHITE << mScoretoShow << BLUE << "                               #\n";//score display needs to be fixed
+	std::cout << "#                        " << WHITE << mScoretoShow << BLUE << "                            #\n";//score display needs to be fixed
 	std::cout << "#                                                        #\n";
 	std::cout << "##########################################################\n";
 	std::cout << RESET;
+	std::cout << WHITE << "press " << RED << "ESC" << WHITE <<" key at anytime to return to game menu.\n";
+	std::cout << WHITE << "Player " << YELLOW << "movement" << WHITE<< ":" << RED << " W, A, S, D " << WHITE << "or" << RED << " Arrow keys" << RESET;
 }
 
 void Menu::setHighScore(int score)

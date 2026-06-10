@@ -11,6 +11,7 @@
 #include "Pacman.h"
 #include "Ghost.h"
 #include "SoundManager.h"
+#include "ConsoleWindow.h"
 
 enum class GameState { Menu, Start, HighScores, Difficulty, Exit };
 
@@ -47,10 +48,12 @@ private:
 	void renderGame();
 	void checkCollisions();
 	void cleanLevel();
+	//double calculateDistance(double x1, double y1, double x2, double y2);
 
 	void setCursorPosition(int x, int y) const;
 	void hideConsoleCursor() const;
 	void fitConsoleToMap(int mapRows, int mapCols);
+	
 
 	void setConsoleFullscreen(bool fullscreen);
 

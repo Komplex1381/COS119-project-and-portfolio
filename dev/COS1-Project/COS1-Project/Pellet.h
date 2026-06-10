@@ -13,7 +13,7 @@ public:
 
 	void eaten() override 
 	{
-		std::cout << "Munch! (+10pts)\n";
+		std::cout << "+10pts\n";
 	}
 };
 

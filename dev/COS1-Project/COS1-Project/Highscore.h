@@ -75,7 +75,6 @@ public:
 				{
 					break;
 				}
-
 				
 								
 				Highscore* newScore = new Highscore();
@@ -83,7 +82,8 @@ public:
 
 				if (tempLength > 0)
 				{
-					newScore->name = new char[tempLength + 1];
+					//Resize to get rid of garbage input and hold the exact string.
+					newScore->name.resize(tempLength);
 
 					fileIn.read(&newScore->name[0], tempLength);
 					

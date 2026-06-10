@@ -5,6 +5,7 @@
 
 GameManager::GameManager() : currentMap(0,0)
 {
+	ConsoleWindow::initialize(L"PAC-MAN P&P Edition", 80, 80);
 	mCurrentGameState = GameState::Menu;
 	mGameRun = true;
 	mCurrentScore = 0;
@@ -199,6 +200,7 @@ void GameManager::handleDifficultyState()
 
 void GameManager::initialLevel()
 {
+	ConsoleWindow::initialize(L"PAC-MAN P&P Edition", 80, 80);
 	mCurrentScore = 0;
 	mLevelRun = true;
 	//load map
@@ -217,6 +219,7 @@ void GameManager::initialLevel()
 		mGhosts.push_back(new Ghost(currentMap.ghostX[i], currentMap.ghostY[i], 1.0, 'G', colors[i]));
 	}
 	
+	//currentMap.renderASCII();
 
 	SoundManager::playSFX("StartMusic.wav");
 
@@ -304,6 +307,14 @@ void GameManager::updateGame()
 	{
 		mPacman->update(currentMap);
 	}
+
+	for (Ghost* ghost : mGhosts)
+	{
+		if (ghost != nullptr && mPacman != nullptr) 
+		{
+			ghost->updateAI(currentMap, mPacman->getX(), mPacman->getY());
+		}
+	}
 }
 
 void GameManager::renderGame()
@@ -357,9 +368,18 @@ void GameManager::renderGame()
 	std::cout << YELLOW << "FRUIT: " << RED << "%" << RESET << "    \n";*/
 
 }
+//double GameManager::calculateDistance(double x1, double y1, double x2, double y2)
+//{
+//	double dx = x2 - x1;
+//	double dy = y2 - y1;
+//
+//	return std::sqrt((dx * dx) + (dy * dy));
+//}
 
 void GameManager::checkCollisions()
 {
+	Pellet pellet;
+
 	if (mPacman == nullptr) 
 	{
 		return;
@@ -374,6 +394,8 @@ void GameManager::checkCollisions()
 		currentMap.setTile(pacY, pacX, 0);
 
 		mCurrentScore += 10;
+		//Needs to display @ pacman x and y
+		pellet.eaten();
 
 		SoundManager::playSFX("Eating.wav");
 	}
