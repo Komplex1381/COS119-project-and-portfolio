@@ -233,11 +233,14 @@ void GameManager::gameplayLoop()
 	//initialLevel();
 	system("cls");
 
+	mPowerPellet = false;
+	mPowerPelletTimer = 0;
+	mGhostStateTimer = 0;
+
 	while (mLevelRun) 
 	{
 		//Fruit timer
-		mFruitTimer++;
-
+		mFruitTimer++;		
 		if (!mShowFruit && mFruitTimer >= mSpawnFruit) 
 		{
 			currentMap.setTile(currentMap.fruitY, currentMap.fruitX, 5);
@@ -249,7 +252,7 @@ void GameManager::gameplayLoop()
 		}
 		else if (mShowFruit && mFruitTimer >= mFruitVanish) 
 		{
-			if (currentMap.getTile(currentMap.fruitY, currentMap.fruitY) ==5) 
+			if (currentMap.getTile(currentMap.fruitY, currentMap.fruitX) ==5) 
 			{
 				currentMap.setTile(currentMap.fruitY, currentMap.fruitX, 0);
 				setCursorPosition(currentMap.fruitX, currentMap.fruitY);
@@ -257,6 +260,22 @@ void GameManager::gameplayLoop()
 			}
 			mShowFruit = false;
 			mFruitTimer = 0;
+		}
+		if (mPowerPellet) 
+		{
+			mPowerPelletTimer--;
+			if (mPowerPelletTimer <= 0) 
+			{
+				mPowerPellet = false;
+				for (const Ghost* ghost : mGhosts) 
+				{
+					GhostState::CHASE;
+					/*if (ghost != nullptr && ghost.getState() == GhostState::FRIGHTENED) 
+					{
+						ghost->setState(GhostState::CHASE);
+					}*/
+				}
+			}
 		}
 
 		//Player input

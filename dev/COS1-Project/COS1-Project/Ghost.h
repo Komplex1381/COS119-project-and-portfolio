@@ -28,6 +28,10 @@ public:
     {
         mState = newState;
     }
+    /*GhostState state() 
+    {
+        return mState;
+    }*/
 
 };
 

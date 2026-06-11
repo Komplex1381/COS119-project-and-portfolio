@@ -1,5 +1,6 @@
 #include "ConsoleWindow.h"
 
+
 void ConsoleWindow::initialize(const std::wstring& title, int width, int height)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -15,8 +16,8 @@ void ConsoleWindow::initialize(const std::wstring& title, int width, int height)
 	CONSOLE_FONT_INFOEX cfi;
 	cfi.cbSize = sizeof(cfi);
 	cfi.nFont = 0;
-	cfi.dwFontSize.X = 12; // Width of each character cell
-	cfi.dwFontSize.Y = 24; // Height of Character cell
+	cfi.dwFontSize.X = 32; // Width of each character cell
+	cfi.dwFontSize.Y = 32; // Height of Character cell
 	cfi.FontFamily = FF_DONTCARE;
 	cfi.FontWeight = FW_NORMAL;
 	wcscpy_s(cfi.FaceName, L"Consolas"); //Font here

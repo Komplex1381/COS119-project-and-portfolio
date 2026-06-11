@@ -27,11 +27,22 @@ private:
 	bool mFullscreen = false;
 	Pacman* mPacman = nullptr;
 	std::vector<Ghost*> mGhosts;
+	//Fruit Timer and Show
 	int mFruitTimer;
 	bool mShowFruit;
 
 	const int mSpawnFruit = 100;
 	const int mFruitVanish = 100;
+	//Power Pellet
+	bool mPowerPellet;
+	int mPowerPelletTimer;
+
+	const int mChase = 200;
+	const int mScatter = 80;
+	const int mFrightened = 80;
+
+	int mGhostStateTimer;
+	
 
 	Menu gameMenu;
 	Map currentMap;

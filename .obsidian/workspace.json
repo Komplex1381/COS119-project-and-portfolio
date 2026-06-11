@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/README.md",
+                "file": "docs/LMiller-Milestone2-Planning.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "README"
+              "title": "LMiller-Milestone2-Planning"
             }
           }
         ]
@@ -185,8 +185,8 @@
   },
   "active": "884388a674fb9244",
   "lastOpenFiles": [
-    "README.md",
     "docs/README.md",
+    "README.md",
     "docs/LMiller-Milestone2-Planning.md",
     "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-cvtres.write.1.tlog",
     "dev/COS1-Project/COS1-Project/x64/Debug/COS1-Project.tlog/link-rc.write.1.tlog",
