@@ -401,13 +401,7 @@ void GameManager::renderGame()
 	std::cout << YELLOW << "FRUIT: " << RED << "%" << RESET << "    \n";*/
 
 }
-//double GameManager::calculateDistance(double x1, double y1, double x2, double y2)
-//{
-//	double dx = x2 - x1;
-//	double dy = y2 - y1;
-//
-//	return std::sqrt((dx * dx) + (dy * dy));
-//}
+
 
 void GameManager::checkCollisions()
 {
@@ -431,7 +425,7 @@ void GameManager::checkCollisions()
 		setCursorPosition(pacX, pacY);
 		pellet.eaten();
 
-		SoundManager::playSFX("Eating.wav");
+		//SoundManager::playSFX("Eating.wav");
 	}
 	else if (currentTile == 2) //POWER Pellet
 	{

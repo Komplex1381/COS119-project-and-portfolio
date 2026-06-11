@@ -29,7 +29,7 @@ Week one started out with a grand idea that I quickly realized I needed to scale
 
 ### Week 2
 
-My next stand up will go here...
+My week 2 gave me a world of new challenges, and add to that the stress of trying to get things done early before I take off for work. This week I worked on collision and AI and I found there is so much more to learn and that I am just an infant in this programming journey I am on. This week every feature or thing I added seemed to, even if it didn't, cause a bug or glitch.  I was able to move the needle forward and now have the bones of a game that I can now bring to life and have run proper once I work out the bugs. I think I leveled up on realizing my ow limitation's and asking for help which I hate to do as it does make me feel as if I know nothing having to ask for help. This next week I plan to iron out all the issues and have a fully running game with all features implemented.
 
 ### Week 3
 
