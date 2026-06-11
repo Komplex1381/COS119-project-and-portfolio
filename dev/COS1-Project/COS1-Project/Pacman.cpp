@@ -15,49 +15,77 @@ void Pacman::draw() const
 
 void Pacman::handleInput()
 {
-	int currentX = getX();
-	int currentY = getY();
+	
 	if ((GetAsyncKeyState('W') & 0x8000) || (GetAsyncKeyState(VK_UP) & 0x8000)) 
 	{
-		currentY--;
-		setY(currentY);
-		//sound needs to only play when eatng pellets, update week2.
-		SoundManager::playSFX("Eating.wav");
-		//setNextDirection(Direction::UP);
+		setNextDirection(Direction::UP);
 	}
 	else if ((GetAsyncKeyState('S') & 0x8000) || (GetAsyncKeyState(VK_DOWN) & 0x8000)) 
 	{
-		currentY++;
-		setY(currentY);
-		//setNextDirection(Direction::DOWN);
+		setNextDirection(Direction::DOWN);
 	}
 	else if ((GetAsyncKeyState('A') & 0x8000) || (GetAsyncKeyState(VK_LEFT) & 0x8000)) 
 	{
-		currentX--;
-		setX(currentX);
-		//setNextDirection(Direction::LEFT);
+		setNextDirection(Direction::LEFT);
 	}
 	else if ((GetAsyncKeyState('D') & 0x8000) || (GetAsyncKeyState(VK_RIGHT) & 0x8000)) 
 	{
-		currentX++;
-		setX(currentX);
-		//SoundManager::playSFX("Eating.wav");
-		//setNextDirection(Direction::RIGHT);
+		setNextDirection(Direction::RIGHT);
 	}
-	SoundManager::stop();
+	
 }
 
 void Pacman::update(const Map& gameMap)
 {
-	//int currentX = getX();
-	//int currentY = getY();
+	int currentX = getX();
+	int currentY = getY();
 
-	int nextX = getX();
-	int nextY = getY();
-	/*Direction nextDirection = getNextDirection();
-	Direction currentDirection = getCurrentDirection();
+	int nextX = currentX;
+	int nextY = currentY;
+	
 
-	switch (nextDirection)
+	switch (getNextDirection())
+	{
+	case Direction::UP:
+		nextY--;
+		break;
+	case Direction::DOWN:
+		nextY++;
+		break;
+	case Direction::LEFT:
+		nextX--;
+		break;
+	case Direction::RIGHT:
+		nextX++;
+		break;
+	default:
+		break;
+	}
+	//Tunnel
+	if (nextX < 0) 
+	{
+		nextX = gameMap.getCols() - 1;
+	}
+	else if (nextX >= gameMap.getCols())
+	{
+		nextX = 0;
+	}
+	
+	char nextTile = gameMap.getTile(nextY, nextX);
+
+	if (getNextDirection() != Direction::NONE && nextTile != 3)
+	{
+		setX(nextX);
+		setY(nextY);
+
+		setCurDirection(getNextDirection());
+		return;
+	}
+	
+	nextX = currentX;
+	nextY = currentY;
+
+	switch (getCurrentDirection())
 	{
 	case Direction::UP:
 		nextY--;
@@ -75,29 +103,35 @@ void Pacman::update(const Map& gameMap)
 		break;
 	}
 
-	setCurDirection(nextDirection);
-
-	int forwardX = getX();
-	int fowardY = getY();
-
-	currentDirection = getCurrentDirection();
-
-	switch (currentDirection)
+	if (nextX < 0)
 	{
-	case Direction::UP:
-		fowardY--;
-		break;
-	case Direction::DOWN:
-		fowardY++;
-		break;
-	case Direction::LEFT:
-		forwardX--;
-		break;
-	case Direction::RIGHT:
-		forwardX++;
-		break;
-	default:
-		break;
+		nextX = gameMap.getCols() - 1;
+	}
+	else if (nextX >= gameMap.getCols())
+	{
+		nextX = 0;
+	}
+
+	nextTile = gameMap.getTile(nextY, nextX);
+
+	/*if (getNextDirection() != Direction::NONE && nextTile != 3)
+	{
+		setX(nextX);
+		setY(nextY);		
+	}
+	else
+	{
+		setCurDirection(Direction::NONE);
 	}*/
+
+	if (nextTile != 3)
+	{
+		setX(nextX);
+		setY(nextY);
+	}
+	else
+	{
+		setCurDirection(Direction::NONE);
+	}
 	
 }

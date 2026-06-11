@@ -11,6 +11,7 @@
 #include "Pacman.h"
 #include "Ghost.h"
 #include "SoundManager.h"
+#include "ConsoleWindow.h"
 
 enum class GameState { Menu, Start, HighScores, Difficulty, Exit };
 
@@ -23,8 +24,25 @@ private:
 	int mHighScore;
 	int mCurrentLevel;
 	bool mLevelRun;
+	bool mFullscreen = false;
 	Pacman* mPacman = nullptr;
 	std::vector<Ghost*> mGhosts;
+	//Fruit Timer and Show
+	int mFruitTimer;
+	bool mShowFruit;
+
+	const int mSpawnFruit = 100;
+	const int mFruitVanish = 100;
+	//Power Pellet
+	bool mPowerPellet;
+	int mPowerPelletTimer;
+
+	const int mChase = 200;
+	const int mScatter = 80;
+	const int mFrightened = 80;
+
+	int mGhostStateTimer;
+	
 
 	Menu gameMenu;
 	Map currentMap;
@@ -46,10 +64,14 @@ private:
 	void renderGame();
 	void checkCollisions();
 	void cleanLevel();
+	
 
 	void setCursorPosition(int x, int y) const;
 	void hideConsoleCursor() const;
 	void fitConsoleToMap(int mapRows, int mapCols);
+	
+
+	void setConsoleFullscreen(bool fullscreen);
 
 public:
 	GameManager();

@@ -139,6 +139,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ConsoleWindow.cpp" />
     <ClCompile Include="COS1-Project.cpp" />
     <ClCompile Include="Fruit.cpp" />
     <ClCompile Include="GameCharacter.cpp" />
@@ -154,6 +155,7 @@
     <ClCompile Include="SoundManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConsoleWindow.h" />
     <ClInclude Include="Fruit.h" />
     <ClInclude Include="GameCharacter.h" />
     <ClInclude Include="GameManager.h" />

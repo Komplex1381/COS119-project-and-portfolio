@@ -15,7 +15,11 @@ Map MapLoader::loadMap(const std::string& filename)
 
         while (std::getline(fileIn, line))
         {
-            if (rows == 0) cols = line.length();
+            if (!line.empty() && line.back() == '\r') 
+            {
+                line.pop_back();
+            }
+            if (rows == 0) cols = static_cast<int>(line.length());
             rows++;
         }
 
@@ -27,26 +31,55 @@ Map MapLoader::loadMap(const std::string& filename)
         int currentRow = 0;
         while (std::getline(fileIn, line) && currentRow < rows) 
         {
+            if (!line.empty() && line.back() == '\r')
+            {
+                line.pop_back();
+            }
             int chars = std::min(static_cast<int>(line.length()), cols);
             for (int col = 0; col < chars; col++) 
             {
                 char ch = line[col];
 
-                if (ch == '#') 
+                if (ch == '#') //Walls
                 {
                     newMap.setTile(currentRow, col, 3);
                 }
-                else if (ch == 'O') 
+                else if (ch == 'O') //Power pellets
                 {
                     newMap.setTile(currentRow, col, 2);
                 }
-                else if (ch == '.') 
+                else if (ch == '.') //Pellets
                 {
                     newMap.setTile(currentRow, col, 1);
                 }
+                else if (ch == '-') //ghost door
+                {
+                    newMap.setTile(currentRow, col, 4);
+                }
                 else 
                 {
-                    newMap.setTile(currentRow, col, 0);
+                    newMap.setTile(currentRow, col, 1);//Path
+
+                    if (ch == 'C') 
+                    {
+                        newMap.pacmanX = col;
+                        newMap.pacmanY = currentRow;
+                    }
+                    else if (ch == 'G') 
+                    {
+                        newMap.ghostX.push_back(col);
+                        newMap.ghostY.push_back(currentRow);
+                    }
+                    else if (ch == '%') 
+                    {
+                        newMap.fruitX = col;
+                        newMap.fruitY = currentRow;
+                        newMap.setTile(currentRow, col, 0);
+                    }
+                    else if (ch == ' ') 
+                    {
+                        newMap.setTile(currentRow, col, 0);
+                    }
                 }
             }
             currentRow++;
