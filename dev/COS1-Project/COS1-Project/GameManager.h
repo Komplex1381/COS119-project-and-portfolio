@@ -65,13 +65,12 @@ private:
 	void checkCollisions();
 	void cleanLevel();
 	
+	ConsoleWindow* mWindow;
 
-	void setCursorPosition(int x, int y) const;
-	void hideConsoleCursor() const;
-	void fitConsoleToMap(int mapRows, int mapCols);
-	
-
-	void setConsoleFullscreen(bool fullscreen);
+	//void setCursorPosition(int x, int y) const;
+	//void hideConsoleCursor() const;
+	//void fitConsoleToMap(int mapRows, int mapCols);
+	//void setConsoleFullscreen(bool fullscreen);
 
 public:
 	GameManager();

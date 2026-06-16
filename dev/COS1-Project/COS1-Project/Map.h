@@ -15,7 +15,7 @@ public:
 	int pacmanX = 0;
 	int pacmanY = 0;
 	int fruitX = 0;
-	int fruitY = 0;
+	int fruitY = 0;	
 	std::vector<int> ghostX;
 	std::vector<int> ghostY;
 
@@ -46,17 +46,42 @@ public:
 	{
 		if (r < 0 || r >= mRows || c < 0 || c >= mCols)
 		{
-			return '#';
+			return 3;
 		}
 		return static_cast<char>(grid[r][c]);
 		
 	}
 
-	bool canMove(int x, int y) 
+	bool canMove(int x, int y, bool ghost = false) 
 	{
 		char tile = getTile(y, x);
 
+		if (tile == 3) 
+		{
+			return false;
+		}
+		if (tile == 4) 
+		{
+			return ghost;
+		}
+
 		return (tile != 3);
+	}
+
+	bool clearedPellets()const 
+	{
+		for (int i = 0; i < mRows; i++)
+		{
+			for (int j = 0; j < mCols; j++)
+			{
+				//check for any pellets or power pellets
+				if (grid[i][j] == 1 || grid[i][j] == 2)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	void renderASCII() const 
@@ -93,7 +118,7 @@ public:
 		}
 	}
 
-	void renderASCII2(int scale = 1) const
+	/*void renderASCII2(int scale = 1) const
 	{
 		for (int i = 0; i < mRows; i++)
 		{
@@ -123,7 +148,7 @@ public:
 			}
 			
 		}
-	}
+	}*/
 
 };
 
