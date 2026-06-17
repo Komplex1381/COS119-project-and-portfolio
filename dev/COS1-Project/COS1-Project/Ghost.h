@@ -16,10 +16,10 @@ class Ghost :  public GameCharacter
 {
 private:
     GhostState mState;
-    int mColor;
+    WORD mColor;
 
 public:
-    Ghost(int startRow, int startCol, double speed, int tileChar, int color);
+    Ghost(int startRow, int startCol, double speed, int tileChar, WORD color);
     virtual ~Ghost() override = default;
 
     void draw() const override;
@@ -28,6 +28,12 @@ public:
     {
         mState = newState;
     }
+    GhostState getState() 
+    {
+        return mState;
+    }
+
+    WORD getColor() const;
     /*GhostState state() 
     {
         return mState;
@@ -36,3 +42,4 @@ public:
 };
 
 double calculateDistance(double x1, double y1, double x2, double y2);
+

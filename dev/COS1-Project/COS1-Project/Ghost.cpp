@@ -1,6 +1,6 @@
 #include "Ghost.h"
 
-Ghost::Ghost(int startRow, int startCol, double speed, int tileChar, int color) : GameCharacter(startRow, startCol, speed, tileChar), mState(GhostState::CHASE), mColor(color)
+Ghost::Ghost(int startRow, int startCol, double speed, int tileChar, WORD color) : GameCharacter(startRow, startCol, speed, tileChar), mState(GhostState::CHASE), mColor(color)
 {
 }
 
@@ -10,6 +10,11 @@ double calculateDistance(double x1, double y1, double x2, double y2)
 	double dy = y2 - y1;
 
 	return std::sqrt((dx * dx) + (dy * dy));
+}
+
+WORD Ghost::getColor() const
+{
+	return mColor;
 }
 
 void Ghost::draw() const

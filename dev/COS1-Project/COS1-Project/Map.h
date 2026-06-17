@@ -42,13 +42,22 @@ public:
 		return mCols;
 	}
 
-	char getTile(int r, int c) const
+	int getTile(int r, int c) const
 	{
-		if (r < 0 || r >= mRows || c < 0 || c >= mCols)
+		/*if (r < 0 || r >= mRows || c < 0 || c >= mCols)
 		{
 			return 3;
 		}
-		return static_cast<char>(grid[r][c]);
+		return static_cast<char>(grid[r][c]);*/
+		if (r < 0 || r >= mRows)
+		{
+			return 3;
+		}
+		if (c < 0 || c >= static_cast<int>(grid[r].size()))
+		{
+			return 3;
+		}
+		return (grid[r][c]);
 		
 	}
 
