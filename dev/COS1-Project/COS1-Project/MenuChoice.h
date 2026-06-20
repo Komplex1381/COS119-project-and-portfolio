@@ -8,3 +8,11 @@ enum class MenuChoice
 	Exit = 3,
 	Count = 4
 };
+enum class DifficultyChoice
+{
+	Easy = 0,
+	Normal = 1,
+	Hard = 2,
+	Viltrumite = 3,
+	Count = 4
+};

@@ -1,6 +1,6 @@
 #include "Ghost.h"
 
-Ghost::Ghost(int startRow, int startCol, double speed, int tileChar, WORD color) : GameCharacter(startRow, startCol, speed, tileChar), mState(GhostState::SCATTER), mColor(color)
+Ghost::Ghost(int startRow, int startCol, double speed, int tileChar, WORD color) : GameCharacter(startRow, startCol, speed, tileChar), mState(GhostState::CHASE), mColor(color)
 {
 }
 
@@ -41,6 +41,9 @@ void Ghost::updateAI(const Map& gameMap, int pacmanX, int pacmanY, Direction pac
 {
 	int currentX = getX();
 	int currentY = getY();
+
+	mPreviousX = currentX;
+	mPreviousY = currentY;
 
 	int targetX = pacmanX;
 	int targetY = pacmanY;
@@ -130,7 +133,7 @@ void Ghost::updateAI(const Map& gameMap, int pacmanX, int pacmanY, Direction pac
 	else if (mState == GhostState::EATEN) 
 	{
 		targetX = 13; // gameMap.getCols() / 2;
-		targetY = 12; // gameMap.getRows() / 2 + 1;
+		targetY = 10; // gameMap.getRows() / 2 + 1;
 
 		if (currentX == targetX && currentY == targetY) 
 		{

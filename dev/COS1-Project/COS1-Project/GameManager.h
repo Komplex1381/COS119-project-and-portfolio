@@ -23,10 +23,12 @@ private:
 	int mCurrentScore;
 	int mHighScore;
 	int mCurrentLevel;
+	DifficultyChoice mChosenDifficulty;
 	bool mLevelRun;
 	bool mFullscreen = false;
 	Pacman* mPacman = nullptr;
 	std::vector<Ghost*> mGhosts;
+	std::vector<int> mExitGhostHouse;
 	//Fruit Timer and Show
 	int mFruitTimer;
 	bool mShowFruit;
@@ -43,6 +45,15 @@ private:
 	GhostState mGlobalGhostState = GhostState::SCATTER;
 
 	int mGhostStateTimer;
+	int mGhostHouseTimer;
+	double mBaseGhostSpeed;
+	bool mIsAttacking;
+	int mAttackVisualX = -1;
+	int mAttackVisualY = -1;
+	int mInfinityRayX[3] = { -1 , -1 , -1 };
+	int mInfinityRayY[3] = { -1 , -1 , -1 };
+	int mActiveRayTiles = 0;
+	
 	
 
 	Menu gameMenu;

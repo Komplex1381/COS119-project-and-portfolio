@@ -40,6 +40,9 @@ void Pacman::update(const Map& gameMap)
 	int currentX = getX();
 	int currentY = getY();
 
+	mPreviousX = currentX;
+	mPreviousY = currentY;
+
 	int nextX = currentX;
 	int nextY = currentY;
 	

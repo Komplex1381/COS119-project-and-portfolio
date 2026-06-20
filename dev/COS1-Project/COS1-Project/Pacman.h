@@ -8,6 +8,8 @@ class Pacman :  public GameCharacter
 {
 private:
 	int mLives;
+	int mPreviousX = 0;
+	int mPreviousY = 0;
 
 public:
 	Pacman(int startRow, int startCol, double speed);
@@ -15,6 +17,8 @@ public:
 	void draw() const override;
 	void handleInput();
 	void update(const Map& gameMap);
+	int getPreviousX() const { return mPreviousX; }
+	int getPreviousY() const { return mPreviousY; }
 	int getLives() const 
 	{
 		return mLives;
@@ -29,6 +33,10 @@ public:
 		{
 			mLives--;
 		}
+	}
+	void setLives(int startingLives)
+	{
+		mLives = startingLives;
 	}
 
 };

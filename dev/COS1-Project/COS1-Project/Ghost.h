@@ -17,6 +17,8 @@ class Ghost :  public GameCharacter
 private:
     GhostState mState;
     WORD mColor;
+    int mPreviousX = 0;
+    int mPreviousY = 0;
 
 public:
     Ghost(int startRow, int startCol, double speed, int tileChar, WORD color);
@@ -28,11 +30,12 @@ public:
     {
         mState = newState;
     }
-    GhostState getState() 
+    GhostState getState() const
     {
         return mState;
     }
-
+    int getPreviousX() const { return mPreviousX; }
+    int getPreviousY() const { return mPreviousY; }
     WORD getColor() const;
     
 
