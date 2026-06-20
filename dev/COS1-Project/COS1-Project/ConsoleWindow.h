@@ -22,5 +22,6 @@ public:
 	void ClearBuffer();
 	void Draw(int x, int y, char c, WORD color);	
 	void Display();
+	void clearScreen();
 };
 

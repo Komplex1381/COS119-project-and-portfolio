@@ -154,4 +154,12 @@ void ConsoleWindow::Display()
 	WriteConsoleOutputA(mConsole, mScreenBuffer,bufferSize,bufferCoord, &mWindowRect);
 }
 
+void ConsoleWindow::clearScreen()
+{
+	ClearBuffer();
+	Display();
+	COORD coordScreen = { 0,0 };
+	SetConsoleCursorPosition(mConsole, coordScreen);
+}
+
 
