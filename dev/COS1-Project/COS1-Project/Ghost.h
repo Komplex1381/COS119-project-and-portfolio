@@ -23,7 +23,7 @@ public:
     virtual ~Ghost() override = default;
 
     void draw() const override;
-    void updateAI(const Map& gameMap, int pacmanX, int pacmanY);
+    void updateAI(const Map& gameMap, int pacmanX, int pacmanY, Direction pacmanDirection, int blinkyX, int blinkyY);
     void setState(GhostState newState) 
     {
         mState = newState;
@@ -34,10 +34,7 @@ public:
     }
 
     WORD getColor() const;
-    /*GhostState state() 
-    {
-        return mState;
-    }*/
+    
 
 };
 

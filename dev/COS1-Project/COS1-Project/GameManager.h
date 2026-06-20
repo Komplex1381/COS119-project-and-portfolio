@@ -40,6 +40,7 @@ private:
 	const int mChase = 200;
 	const int mScatter = 80;
 	const int mFrightened = 80;
+	GhostState mGlobalGhostState = GhostState::SCATTER;
 
 	int mGhostStateTimer;
 	
@@ -67,10 +68,7 @@ private:
 	
 	ConsoleWindow* mWindow;
 
-	//void setCursorPosition(int x, int y) const;
-	//void hideConsoleCursor() const;
-	//void fitConsoleToMap(int mapRows, int mapCols);
-	//void setConsoleFullscreen(bool fullscreen);
+	
 
 public:
 	GameManager();
