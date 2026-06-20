@@ -14,6 +14,7 @@ private:
 	int mX;
 	int mY;
 	double mSpeed;
+	double mMovementCounter = 0.0;
 	Direction mCurrentDirection;
 	Direction mNextDirection;
 	int mTileChar;
@@ -48,10 +49,35 @@ public:
 	{
 		mY = y;
 	}
-
+	void setTile(char newTile) 
+	{
+		mTileChar = newTile;
+	}
 	int getTileChar() const 
 	{
 		return mTileChar;
+	}
+	double getSpeed() const
+	{
+		return mSpeed;
+	}
+	void setSpeed(double speed) 
+	{
+		mSpeed = speed;
+	}
+	void increaseMovement() 
+	{
+		mMovementCounter += mSpeed;
+	}
+
+	bool canMove() 
+	{
+		return mMovementCounter >= 0.6;
+	}
+
+	void decreaseMovement() 
+	{
+		mMovementCounter -= 0.6;
 	}
 
 	Direction getCurrentDirection() const 
@@ -68,6 +94,7 @@ public:
 	{
 		mNextDirection = direction;
 	}
+
 	void setCurDirection(Direction direction)
 	{
 		mCurrentDirection = direction;

@@ -40,6 +40,9 @@ void Pacman::update(const Map& gameMap)
 	int currentX = getX();
 	int currentY = getY();
 
+	mPreviousX = currentX;
+	mPreviousY = currentY;
+
 	int nextX = currentX;
 	int nextY = currentY;
 	
@@ -73,7 +76,7 @@ void Pacman::update(const Map& gameMap)
 	
 	char nextTile = gameMap.getTile(nextY, nextX);
 
-	if (getNextDirection() != Direction::NONE && nextTile != 3)
+	if (getNextDirection() != Direction::NONE && nextTile != 3 && nextTile != 4)
 	{
 		setX(nextX);
 		setY(nextY);
@@ -124,7 +127,7 @@ void Pacman::update(const Map& gameMap)
 		setCurDirection(Direction::NONE);
 	}*/
 
-	if (nextTile != 3)
+	if (nextTile != 3 && nextTile != 4)
 	{
 		setX(nextX);
 		setY(nextY);

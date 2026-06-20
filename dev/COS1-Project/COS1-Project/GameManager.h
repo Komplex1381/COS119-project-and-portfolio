@@ -23,10 +23,12 @@ private:
 	int mCurrentScore;
 	int mHighScore;
 	int mCurrentLevel;
+	DifficultyChoice mChosenDifficulty;
 	bool mLevelRun;
 	bool mFullscreen = false;
 	Pacman* mPacman = nullptr;
 	std::vector<Ghost*> mGhosts;
+	std::vector<int> mExitGhostHouse;
 	//Fruit Timer and Show
 	int mFruitTimer;
 	bool mShowFruit;
@@ -40,8 +42,18 @@ private:
 	const int mChase = 200;
 	const int mScatter = 80;
 	const int mFrightened = 80;
+	GhostState mGlobalGhostState = GhostState::SCATTER;
 
 	int mGhostStateTimer;
+	int mGhostHouseTimer;
+	double mBaseGhostSpeed;
+	bool mIsAttacking;
+	int mAttackVisualX = -1;
+	int mAttackVisualY = -1;
+	int mInfinityRayX[3] = { -1 , -1 , -1 };
+	int mInfinityRayY[3] = { -1 , -1 , -1 };
+	int mActiveRayTiles = 0;
+	
 	
 
 	Menu gameMenu;
@@ -65,13 +77,9 @@ private:
 	void checkCollisions();
 	void cleanLevel();
 	
+	ConsoleWindow* mWindow;
 
-	void setCursorPosition(int x, int y) const;
-	void hideConsoleCursor() const;
-	void fitConsoleToMap(int mapRows, int mapCols);
 	
-
-	void setConsoleFullscreen(bool fullscreen);
 
 public:
 	GameManager();

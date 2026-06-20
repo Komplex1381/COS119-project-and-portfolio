@@ -56,30 +56,31 @@ Map MapLoader::loadMap(const std::string& filename)
                 {
                     newMap.setTile(currentRow, col, 4);
                 }
-                else 
+                else if (ch == ' ')
                 {
-                    newMap.setTile(currentRow, col, 1);//Path
-
-                    if (ch == 'C') 
-                    {
-                        newMap.pacmanX = col;
-                        newMap.pacmanY = currentRow;
-                    }
-                    else if (ch == 'G') 
-                    {
-                        newMap.ghostX.push_back(col);
-                        newMap.ghostY.push_back(currentRow);
-                    }
-                    else if (ch == '%') 
-                    {
-                        newMap.fruitX = col;
-                        newMap.fruitY = currentRow;
-                        newMap.setTile(currentRow, col, 0);
-                    }
-                    else if (ch == ' ') 
-                    {
-                        newMap.setTile(currentRow, col, 0);
-                    }
+                    newMap.setTile(currentRow, col, 0);
+                }
+                else if (ch == 'C') 
+                {
+                    newMap.pacmanX = col;
+                    newMap.pacmanY = currentRow;
+                    newMap.setTile(currentRow, col, 0);
+                }
+                else if (ch == 'G') 
+                {
+                    newMap.ghostX.push_back(col);
+                    newMap.ghostY.push_back(currentRow);
+                    newMap.setTile(currentRow, col, 0);
+                }
+                else if (ch == '%')
+                {
+                    newMap.fruitX = col;
+                    newMap.fruitY = currentRow;
+                    newMap.setTile(currentRow, col, 0);
+                }
+                else
+                {
+                    newMap.setTile(currentRow, col, 0);
                 }
             }
             currentRow++;

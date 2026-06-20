@@ -15,7 +15,7 @@ public:
 	int pacmanX = 0;
 	int pacmanY = 0;
 	int fruitX = 0;
-	int fruitY = 0;
+	int fruitY = 0;	
 	std::vector<int> ghostX;
 	std::vector<int> ghostY;
 
@@ -42,21 +42,51 @@ public:
 		return mCols;
 	}
 
-	char getTile(int r, int c) const
+	int getTile(int r, int c) const
 	{
-		if (r < 0 || r >= mRows || c < 0 || c >= mCols)
+		
+		if (r < 0 || r >= mRows)
 		{
-			return '#';
+			return 3;
 		}
-		return static_cast<char>(grid[r][c]);
+		if (c < 0 || c >= static_cast<int>(grid[r].size()))
+		{
+			return 3;
+		}
+		return (grid[r][c]);
 		
 	}
 
-	bool canMove(int x, int y) 
+	bool canMove(int x, int y, bool ghost = false) 
 	{
 		char tile = getTile(y, x);
 
+		if (tile == 3) 
+		{
+			return false;
+		}
+		if (tile == 4) 
+		{
+			return ghost;
+		}
+
 		return (tile != 3);
+	}
+
+	bool clearedPellets()const 
+	{
+		for (int i = 0; i < mRows; i++)
+		{
+			for (int j = 0; j < mCols; j++)
+			{
+				//check for any pellets or power pellets
+				if (grid[i][j] == 1 || grid[i][j] == 2)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	void renderASCII() const 
@@ -93,37 +123,7 @@ public:
 		}
 	}
 
-	void renderASCII2(int scale = 1) const
-	{
-		for (int i = 0; i < mRows; i++)
-		{
-			for (int vRepeat = 0; vRepeat < scale; vRepeat++) 
-			{
-				for (int j = 0; j < mCols; j++)
-				{
-					for(int hRepeat = 0; hRepeat < scale; hRepeat++){
-						switch (grid[i][j])
-						{
-						case 3:
-							std::cout << BLUE << "#";
-							break;
-						case 2:
-							std::cout << YELLOW << "O";
-							break;
-						case 1:
-							std::cout << WHITE << ".";
-							break;
-						default:
-							std::cout << " ";
-							break;
-						}
-					}
-				}
-				std::cout << "\n";
-			}
-			
-		}
-	}
+	
 
 };
 

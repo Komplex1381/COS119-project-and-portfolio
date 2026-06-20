@@ -5,7 +5,9 @@
 
 GameManager::GameManager() : currentMap(0,0)
 {
-	ConsoleWindow::initialize(L"PAC-MAN P&P Edition", 80, 80);
+	ConsoleWindow::initialize(L"PAC-MAN P&P Edition", 80, 85);
+	mWindow = new ConsoleWindow(80, 85);
+
 	mCurrentGameState = GameState::Menu;
 	mGameRun = true;
 	mCurrentScore = 0;
@@ -13,7 +15,7 @@ GameManager::GameManager() : currentMap(0,0)
 	mCurrentLevel = 1;
 	mLevelRun = false;
 
-	hideConsoleCursor();
+	ConsoleWindow::hideConsoleCursor();
 	loadScores();
 	gameMenu.setHighScore(mHighScore);
 	
@@ -24,6 +26,9 @@ GameManager::~GameManager()
 	cleanLevel();
 
 	saveScores();
+
+	delete mWindow;
+	
 	for (Highscore* hs : highScores) 
 	{
 		delete hs;
@@ -33,7 +38,7 @@ GameManager::~GameManager()
 
 void GameManager::run()
 {
-	hideConsoleCursor();
+	ConsoleWindow::hideConsoleCursor();
 	while (mGameRun)
 	{
 		switch (mCurrentGameState)
@@ -141,7 +146,7 @@ void GameManager::handleMenuState()
 			mCurrentGameState = GameState::Difficulty;
 			break;
 		case MenuChoice::Exit:
-			saveScores();
+			//saveScores();
 			mCurrentGameState = GameState::Exit;
 			break;
 		default:
@@ -178,49 +183,170 @@ void GameManager::handleHighScoreState()
 
 void GameManager::handleDifficultyState()
 {
-	system("cls");
-	Helper::TitleC("DIFFICULTY", WHITE, YELLOW);
-	std::cout << BLUE << "Please select Difficulty: \n" << RESET;
-	//This will change later once I get game running and add feature.
-	std::cout << "Easy\n";
-	std::cout << "Normal\n";
-	std::cout << "Hard\n\n";
+	int currentSelection = 0;
+	bool stateRunning = true;
+	bool redraw = true;
 
-	std::cout << "Press ESC to return to Menu...";
-	while (mCurrentGameState == GameState::Difficulty)
+	while (stateRunning && mCurrentGameState == GameState::Difficulty)
 	{
+		if (redraw)
+		{
+			//system("cls");
+			mWindow->clearScreen();
+			Helper::TitleC("DIFFICULTY", WHITE, YELLOW);
+			std::cout << BLUE << "Please select Difficulty: \n" << RESET;
+			
+			std::string choices[] = { "Easy", "Normal", "Hard", "Viltrumite" };
+			for (int i = 0; i < 4; i++)
+			{
+				if (currentSelection == i)
+				{
+					std::cout << YELLOW << " > " << choices[i] << " <\n" << RESET;
+				}
+				else
+				{
+					std::cout << WHITE << "  " << choices[i] << "\n" << RESET;
+				}
+			}
+			std::cout << "\nPress UP/DOWN to scroll, ENTER to select.\n";
+			std::cout << "Press ESC to return to Menu...";
+			redraw = false;
+		}
+		Sleep(30);
+		
+		if (GetAsyncKeyState(VK_UP) & 0x8000)
+		{
+			currentSelection = (currentSelection - 1 + 4) % 4;
+			//keyPressed = true;
+			redraw = true;
+			Sleep(150);
+		}
+		if (GetAsyncKeyState(VK_DOWN) & 0x8000)
+		{
+			currentSelection = (currentSelection + 1) % 4;
+			redraw = true;
+			//keyPressed = true;
+			Sleep(150);
+		}
+		if (GetAsyncKeyState(VK_RETURN) & 0x8000)
+		{
+			mChosenDifficulty = static_cast<DifficultyChoice>(currentSelection);
+			mCurrentGameState = GameState::Menu;
+			stateRunning = false;
+			//keyPressed = true;
+			Sleep(150);
+		}
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
 		{
 			mCurrentGameState = GameState::Menu;
+			stateRunning = false;
+			//keyPressed = true;
+			Sleep(150);
 		}
+		
+		//Sleep(10);
 	}
-	Sleep(10);
 	
 }
 
 void GameManager::initialLevel()
 {
-	ConsoleWindow::initialize(L"PAC-MAN P&P Edition", 80, 80);
-	mCurrentScore = 0;
+	cleanLevel();
+	mExitGhostHouse.clear();
+	//ConsoleWindow::initialize(L"PAC-MAN P&P Edition", 80, 80);
+	if (mCurrentLevel == 1) 
+	{ mCurrentScore = 0; }
+
 	mLevelRun = true;
 	mFruitTimer = 0;
 	//load map
-	currentMap = MapLoader::loadMap("lvl2.txt");
-
-	fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
-	system("cls");
-	//currentMap.renderASCII();
-
-	//Pacman & ghost logic here
-	mPacman = new Pacman(currentMap.pacmanX, currentMap.pacmanY, 0.5);
-
-	int colors[] = { 12,11,13,14 };
-	for (int i = 0; i < currentMap.ghostX.size() && i < 4; i++) 
+	std::string mapFileName = "lvl" + std::to_string(mCurrentLevel) + ".txt";
+	currentMap = MapLoader::loadMap(mapFileName);
+	if (currentMap.getRows() == 0 || currentMap.getCols() == 0)
 	{
-		mGhosts.push_back(new Ghost(currentMap.ghostX[i], currentMap.ghostY[i], 1.0, 'G', colors[i]));
+		currentMap = MapLoader::loadMap("lvl2.txt");
+		mBaseGhostSpeed += 0.05;
+	}
+
+	ConsoleWindow::fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
+	//system("cls");
+
+	if (mWindow != nullptr) 
+	{
+		mWindow->clearScreen();
 	}
 	
-	//currentMap.renderASCII();
+	int startingLives = 3;
+	mBaseGhostSpeed = 0.6;
+	size_t ghostSpawnCount = currentMap.ghostX.size();
+
+	//configure difficulty
+	switch (mChosenDifficulty)
+	{
+	case DifficultyChoice::Easy:
+		startingLives = 4;
+		mBaseGhostSpeed = 0.45;
+		break;
+	case DifficultyChoice::Normal:
+		startingLives = 3;
+		mBaseGhostSpeed = 0.6;
+		break;
+	case DifficultyChoice::Hard:
+		startingLives = 2;
+		mBaseGhostSpeed = 0.75;
+		break;
+	case DifficultyChoice::Viltrumite:
+		startingLives = 1;
+		mBaseGhostSpeed = 0.75;
+		ghostSpawnCount = currentMap.ghostX.empty() ? 4: 80;
+		break;
+	default:
+		break;
+	}
+	int spacing = (mChosenDifficulty == DifficultyChoice::Easy) ? 45 : 30;
+	//if (mChosenDifficulty == DifficultyChoice::Easy) { spacing = 45; }
+
+	//Pacman & ghost logic here
+	mPacman = new Pacman(currentMap.pacmanX, currentMap.pacmanY, 0.8);
+	mPacman->setLives(startingLives);
+
+	WORD ghostColors[4] = 
+	{ 
+		FOREGROUND_RED | FOREGROUND_INTENSITY,
+		FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+		FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+		FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY
+	};
+	//Prevents out of bounds crash
+	for (size_t i = 0; i < ghostSpawnCount; i++)
+	{
+		size_t coordIndex = i % currentMap.ghostX.size();
+		WORD color = ghostColors[i % 4];
+
+		mGhosts.push_back(new Ghost(currentMap.ghostX[coordIndex], currentMap.ghostY[coordIndex], mBaseGhostSpeed, 'G', color));
+		mExitGhostHouse.push_back(static_cast<int>(i) * spacing);
+	}
+	
+	currentMap.renderASCII();
+	if (mPacman != nullptr)
+	{
+		ConsoleWindow::setCursorPosition(mPacman->getX(), mPacman->getY());
+		mPacman->draw();
+	}
+
+	////Draw Ghost
+	//for(size_t i  = 0; i < currentMap.ghostX.size() && i < 4; i++) 
+	//{
+	//	mGhosts.push_back(new Ghost(currentMap.ghostX[i], currentMap.ghostY[i], 0.6, 'G', ghostColors[i]));
+	//}
+	//for (const Ghost* ghost : mGhosts)
+	//{
+	//	if (ghost != nullptr)
+	//	{
+	//		ConsoleWindow::setCursorPosition(ghost->getX(), ghost->getY());
+	//		ghost->draw();
+	//	}
+	//}
 
 	SoundManager::playSFX("StartMusic.wav");
 
@@ -230,15 +356,44 @@ void GameManager::initialLevel()
 
 void GameManager::gameplayLoop()
 {
-	//initialLevel();
-	system("cls");
+	
+	system("cls");	
 
 	mPowerPellet = false;
 	mPowerPelletTimer = 0;
 	mGhostStateTimer = 0;
+	mGhostHouseTimer = 0;
 
 	while (mLevelRun) 
 	{
+		
+		mGhostStateTimer++;
+		mGhostHouseTimer++;
+
+		bool scatterTransition = (mGhostStateTimer >=200);
+		bool chaseTransition = (mGhostStateTimer >= 270);
+
+		
+		if (scatterTransition || chaseTransition)
+		{
+			for (Ghost* ghost : mGhosts)
+			{
+				if (scatterTransition && ghost->getState() == GhostState::CHASE)
+				{
+					ghost->setState(GhostState::SCATTER);					
+				}
+				else if (chaseTransition && ghost->getState() == GhostState::SCATTER)
+				{
+					ghost->setState(GhostState::CHASE);					
+				}
+
+			}
+			if (scatterTransition || chaseTransition)
+			{
+				mGhostStateTimer = 0;
+			}
+		}
+			
 		//Fruit timer
 		mFruitTimer++;		
 		if (!mShowFruit && mFruitTimer >= mSpawnFruit) 
@@ -247,7 +402,7 @@ void GameManager::gameplayLoop()
 			mShowFruit = true;
 			mFruitTimer = 0;
 
-			setCursorPosition(currentMap.fruitX, currentMap.fruitY);
+			ConsoleWindow::setCursorPosition(currentMap.fruitX, currentMap.fruitY);
 			std::cout << RED << "%" << RESET;
 		}
 		else if (mShowFruit && mFruitTimer >= mFruitVanish) 
@@ -255,7 +410,7 @@ void GameManager::gameplayLoop()
 			if (currentMap.getTile(currentMap.fruitY, currentMap.fruitX) ==5) 
 			{
 				currentMap.setTile(currentMap.fruitY, currentMap.fruitX, 0);
-				setCursorPosition(currentMap.fruitX, currentMap.fruitY);
+				ConsoleWindow::setCursorPosition(currentMap.fruitX, currentMap.fruitY);
 				std::cout << " ";
 			}
 			mShowFruit = false;
@@ -267,13 +422,13 @@ void GameManager::gameplayLoop()
 			if (mPowerPelletTimer <= 0) 
 			{
 				mPowerPellet = false;
-				for (const Ghost* ghost : mGhosts) 
+				for (Ghost* ghost : mGhosts) 
 				{
-					GhostState::CHASE;
-					/*if (ghost != nullptr && ghost.getState() == GhostState::FRIGHTENED) 
+					//GhostState::CHASE;
+					if (ghost != nullptr) //ghost != nullptr && ghost.getState() == GhostState::FRIGHTENED) 
 					{
 						ghost->setState(GhostState::CHASE);
-					}*/
+					}
 				}
 			}
 		}
@@ -287,11 +442,11 @@ void GameManager::gameplayLoop()
 			//flip variable
 			mFullscreen = !mFullscreen;
 
-			setConsoleFullscreen(mFullscreen);
+			ConsoleWindow::setConsoleFullscreen(mFullscreen);
 
 			if (!mFullscreen) 
 			{
-				fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
+				ConsoleWindow::fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
 			}
 			system("cls");
 			Sleep(250);
@@ -318,39 +473,63 @@ void GameManager::gameplayLoop()
 
 void GameManager::updateGame()
 {
+	mIsAttacking = false;
+	mActiveRayTiles = 0;
 	//player & ghost update here
 	if (mPacman != nullptr)
 	{
-		setCursorPosition(mPacman->getX(), mPacman->getY());
+		//return;
+		ConsoleWindow::setCursorPosition(mPacman->getX(), mPacman->getY());
 		std::cout << " ";
 	}
 
-	//Draw Ghost
+	int blinkyX = 0;
+	int blinkyY = 0;
+	WORD blinkyColorCode = FOREGROUND_RED | FOREGROUND_INTENSITY;
+
 	for (const Ghost* ghost : mGhosts)
 	{
 		if (ghost != nullptr)
 		{
-			setCursorPosition(ghost->getX(), ghost->getY());
+
+			ConsoleWindow::setCursorPosition(ghost->getX(), ghost->getY());
 			char tileToShow = currentMap.getTile(ghost->getY(), ghost->getX());
-			if (tileToShow == 1) 
+			switch (tileToShow)
+			{
+			case 1://Pellet
 			{
 				std::cout << WHITE << ".";
+				break;
 			}
-			else if (tileToShow == 2) 
+			case 2://Power pellet
 			{
 				std::cout << YELLOW << "O";
+				break;
 			}
-			else if (tileToShow == 4)
+			case 4://Door
 			{
 				std::cout << WHITE << "-";
+				break;
 			}
-			else if (tileToShow == 5)
+			case 5://Fruit
 			{
 				std::cout << RED << "%";
+				break;
 			}
-			else 
+			default://Empty space
 			{
 				std::cout << " ";
+				break;
+			}
+
+			}
+
+
+			if (ghost->getColor() == blinkyColorCode)
+			{
+				blinkyX = ghost->getX();
+				blinkyY = ghost->getY();
+				//break;
 			}
 		}
 	}
@@ -359,37 +538,240 @@ void GameManager::updateGame()
 	{
 		mPacman->update(currentMap);
 	}
-
-	for (Ghost* ghost : mGhosts)
+	/////////////////////////////////
+	//Attack for Pacman Invincible //
+	/////////////////////////////////
+	if (mPacman != nullptr && mChosenDifficulty == DifficultyChoice::Viltrumite && (GetAsyncKeyState(VK_SPACE) & 0x8000))
 	{
-		if (ghost != nullptr && mPacman != nullptr) 
+		int attackX = mPacman->getX();
+		int attackY = mPacman->getY();
+		switch (mPacman->getCurrentDirection()) 
 		{
-			ghost->updateAI(currentMap, mPacman->getX(), mPacman->getY());
+		case Direction::UP:
+			attackY--;
+			break;
+		case Direction::DOWN:
+			attackY++;
+			break;
+		case Direction::LEFT:
+			attackX--;
+			break;
+		case Direction::RIGHT:
+			attackX++;
+			break;
+		default:
+			break;
+		}
+		mIsAttacking = true;
+		mAttackVisualX = attackX;
+		mAttackVisualY = attackY;
+		for (Ghost* ghost : mGhosts)
+		{
+			if (ghost != nullptr && ghost->getX() == attackX && ghost->getY() == attackY)
+			{
+				if (ghost->getState() != GhostState::EATEN) 
+				{
+					ghost->setState(GhostState::EATEN);
+					mCurrentScore += 100;
+					//sound effect
+				}
+			}
 		}
 	}
+	////////////////
+	//Infinity Ray//
+	////////////////
+	if (mPacman != nullptr && mChosenDifficulty == DifficultyChoice::Viltrumite && (GetAsyncKeyState('I') & 0x8000))
+	{
+		
+		Direction currentFacing = mPacman->getCurrentDirection();
+
+		if (currentFacing == Direction::NONE) 
+		{
+			currentFacing = Direction::RIGHT;
+		}
+		mIsAttacking = true;
+
+		for (int step = 1; step <= 3; step++)
+		{
+			int rayX = mPacman->getX();
+			int rayY = mPacman->getY();
+
+
+			switch (currentFacing)
+			{
+			case Direction::UP:
+				rayY -= step;
+				break;
+			case Direction::DOWN:
+				rayY += step;
+				break;
+			case Direction::LEFT:
+				rayX -= step;
+				break;
+			case Direction::RIGHT:
+				rayX += step;
+				break;
+			default:
+				break;
+			}
+			//Check map boundry
+			if (rayX < 0 || rayX >= currentMap.getCols() || rayY < 0 || rayY >= currentMap.getRows())
+			{
+				break;
+			}
+			//Wall block
+			if (currentMap.getTile(rayY, rayX) == 3) 
+			{
+				break;
+			}
+			//protection against array limits
+			if (mActiveRayTiles < 4)
+			{
+				mInfinityRayX[mActiveRayTiles] = rayX;
+				mInfinityRayY[mActiveRayTiles] = rayY;
+				mActiveRayTiles++;
+			}
+			
+			for (Ghost* ghost : mGhosts)
+			{
+				if (ghost != nullptr && ghost->getX() == rayX && ghost->getY() == rayY)
+				{
+					if (ghost->getState() != GhostState::EATEN)
+					{
+						ghost->setState(GhostState::EATEN);
+						mCurrentScore += 100;
+						//sound effect
+					}
+				}
+			}
+		}
+	}
+
+	//int exitGhostHouse[] = { 0,10,15,20 };
+	int doorX = 13;//  currentMap.getCols() / 2;
+	int doorY = 10; //(currentMap.getRows() / 2) - 1;
+
+	for (size_t i = 0; i < mGhosts.size(); i++)
+	{
+		Ghost* ghost = mGhosts[i];
+		if (ghost == nullptr || mPacman == nullptr)
+		{
+			continue;
+		}
+
+		if (ghost->getState() == GhostState::FRIGHTENED)
+		{
+			ghost->setSpeed(0.4);
+		}
+		else if (ghost->getState() == GhostState::EATEN)
+		{
+			ghost->setSpeed(1.5);
+		}
+		else
+		{
+			ghost->setSpeed(mBaseGhostSpeed);
+		}
+
+		ghost->increaseMovement();
+
+		if (ghost->canMove())
+		{
+			bool insideHouse = (ghost->getY() > 11);
+
+			if (insideHouse && mGhostHouseTimer < mExitGhostHouse[i] && ghost->getState() != GhostState::FRIGHTENED && ghost->getState() != GhostState::EATEN)
+			{
+				ghost->updateAI(currentMap, 13, 12, mPacman->getCurrentDirection(), blinkyX, blinkyY);
+			}
+			else if (insideHouse)
+			{
+				ghost->updateAI(currentMap, doorX, doorY, mPacman->getCurrentDirection(), blinkyX, blinkyY);
+			}
+			else
+			{
+				ghost->updateAI(currentMap, mPacman->getX(), mPacman->getY(), mPacman->getCurrentDirection(), blinkyX, blinkyY);
+			}
+			ghost->decreaseMovement();
+		}
+	}
+	/*for (Ghost* ghost : mGhosts)
+	{
+		if (ghost != nullptr && mPacman != nullptr)
+		{
+			ghost->updateAI(currentMap, mPacman->getX(), mPacman->getY(), mPacman->getCurrentDirection(), blinkyX, blinkyY);
+		}
+	}*/
+	
 }
 
 void GameManager::renderGame()
 {
+	mWindow->ClearBuffer();
+
 	int mapRows = currentMap.getRows();
 	int mapCols = currentMap.getCols();
+	WORD white = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+	WORD yellow = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
 
-	setCursorPosition(0,0);
+	
 
 	//Draw HUD Header
-	/*std::cout << WHITE << "Score: " << YELLOW << mCurrentScore;
-	setCursorPosition(mapCols / 2, 0);
-	std::cout << WHITE << "HIGH SCORE: " << RED << mHighScore << "\n";
-	std::cout << BLUE << std::string(mapCols, '=') << "\n" << RESET;*/
+	//std::string score = "Score: " + std::to_string(mCurrentScore);
+	//for (size_t i = 0; i < score.length(); i++) 
+	//{
+	//	mWindow->Draw(static_cast<int>(i), 0, score[i], yellow);
+	//}
+	////std::cout << WHITE << "Score: " << YELLOW << mCurrentScore;
+	////setCursorPosition(mapCols / 2, 0);
+	//std::string hiScore = "HIGH SCORE: " + std::to_string(mHighScore);
+	//int hiScoreX = mapCols - static_cast<int>(hiScore.length());
+	//if (hiScoreX > 0) 
+	//{
+	//	for (size_t i = 0; i < hiScore.length(); i++)
+	//	{
+	//		mWindow->Draw(hiScoreX + static_cast<int>(i),0, hiScore[i], FOREGROUND_RED | FOREGROUND_INTENSITY);
+	//	}
+	//}
+	//std::cout << WHITE << "HIGH SCORE: " << RED << mHighScore << "\n";
+	//std::cout << BLUE << std::string(mapCols, '=') << "\n" << RESET;
 	//Render Map
 	//setCursorPosition(0,2);
-	currentMap.renderASCII();
+	//currentMap.renderASCII();
+	for (int y = 0; y < mapRows; y++) 
+	{
+		for (int x = 0; x < mapCols; x++)
+		{
+			char tile = currentMap.getTile(y, x);
+			int renderY = y; 
+
+			if (tile == 1)
+			{
+				mWindow->Draw(x, renderY, '.', white);
+			}
+			else if (tile == 2)
+			{
+				mWindow->Draw(x, renderY, 'O', yellow);
+			}
+			else if (tile == 3)
+			{
+				mWindow->Draw(x, renderY, '#', FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+			}
+			else if (tile == 4)
+			{
+				mWindow->Draw(x, renderY, '-', white);
+			}
+			else if (tile == 5)
+			{
+				mWindow->Draw(x, renderY, '%', FOREGROUND_RED | FOREGROUND_INTENSITY);
+			}
+			
+		}
+	}
 
 	//Draw player on map
 	if (mPacman != nullptr) 
 	{
-		setCursorPosition(mPacman->getX(), mPacman->getY());
-		mPacman->draw();
+		mWindow->Draw(mPacman->getX(), mPacman->getY(), 'C', yellow);
 	}
 
 	//Draw Ghost
@@ -397,16 +779,55 @@ void GameManager::renderGame()
 	{
 		if (ghost != nullptr) 
 		{
-			setCursorPosition(ghost->getX(), ghost->getY());
-			ghost->draw();
+			WORD ghostColor;
+			char ghostChar = 'G';
+
+			if (ghost->getState() == GhostState::EATEN) 
+			{
+				ghostColor = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+				ghostChar = 'u';
+			}
+			else if (mPowerPellet)
+			{
+				ghostColor = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+			}
+			else 
+			{
+				ghostColor = ghost->getColor();
+			}
+			mWindow->Draw(ghost->getX(), ghost->getY(), ghostChar, ghostColor);
+		}
+		////////////////////////////
+		//Invinible Visual Attacks//
+		////////////////////////////
+		
+		//////////////////////
+		//Punch 1 tile ahead//
+		//////////////////////
+		if (mIsAttacking && mAttackVisualX >= 0 && mAttackVisualY >= 0) 
+		{
+			WORD flashColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+			mWindow->Draw(mAttackVisualX, mAttackVisualY, 'X', flashColor);
+		}
+		//////////////////////////////
+		//InfinityRay 3 tiles ahead //
+		//////////////////////////////
+		if (mChosenDifficulty == DifficultyChoice::Viltrumite && mIsAttacking)
+		{
+			WORD rayColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+			for (int i = 0; i < mActiveRayTiles; i++) 
+			{ 
+				mWindow->Draw(mInfinityRayX[i], mInfinityRayY[i], '>', rayColor);
+			}
 		}
 	}
+	mWindow->Display();
 
 	//Draw HUD Footer
-	/*int BottumHud = mapRows + 2;
-	setCursorPosition(0, BottumHud);	
-	std::cout << BLUE << std::string(mapCols, '=') << "\n" << RESET;
-	setCursorPosition(0, BottumHud + 1);
+	int BottumHud = mapRows;
+	ConsoleWindow::setCursorPosition(0, BottumHud);
+	//std::cout << BLUE << std::string(mapCols, '=') << "\n" << RESET;
+	//setCursorPosition(0, BottumHud + 1);
 	std::cout << WHITE << "LIVES: ";
 	
 	int totalLives = (mPacman != nullptr) ? mPacman->getLives() : 0;
@@ -416,8 +837,8 @@ void GameManager::renderGame()
 	}
 
 	std::cout << WHITE << "           ";
-	setCursorPosition(mapCols - 15, BottumHud + 1);
-	std::cout << YELLOW << "FRUIT: " << RED << "%" << RESET << "    \n";*/
+	ConsoleWindow::setCursorPosition(mapCols - 15, BottumHud);
+	std::cout << YELLOW << "FRUIT: " << RED << "%" << RESET << "    \n";
 
 }
 
@@ -438,23 +859,31 @@ void GameManager::checkCollisions()
 	if (currentTile == 1)
 	{
 		currentMap.setTile(pacY, pacX, 0);
-
 		mCurrentScore += 10;
-		//Needs to display @ pacman x and y
-		setCursorPosition(pacX, pacY);
-		pellet.eaten();
-
+		//pellet.eaten();
 		//SoundManager::playSFX("Eating.wav");
+
 	}
 	else if (currentTile == 2) //POWER Pellet
 	{
 		currentMap.setTile(pacY, pacX, 0);
 		mCurrentScore += 50;
-	}
+
+		mPowerPellet = true;
+		mPowerPelletTimer = 50;
+
+		for (Ghost* ghost : mGhosts)
+		{
+			if (ghost != nullptr)
+			{
+				ghost->setState(GhostState::FRIGHTENED);
+				//ghost->setTile('@');
+			}
+		}
+	}//Fruit
 	else if (currentTile == 5)
 	{
-		Fruit cherry("Cherry", 100);
-		setCursorPosition(pacX, pacY);
+		Fruit cherry("Cherry", 100);		
 		cherry.eaten();
 
 		mCurrentScore += cherry.getPoints();
@@ -465,45 +894,116 @@ void GameManager::checkCollisions()
 	}
 
 	//Ghost Collision
-	for (Ghost* ghost : mGhosts) 
+	for (size_t i = 0; i < mGhosts.size(); i++)
 	{
-		if (ghost != nullptr) 
+		Ghost* ghost = mGhosts[i];
+		if (ghost == nullptr)
 		{
+			continue;
+		}
 			int ghostX = ghost->getX();
 			int ghostY = ghost->getY();
+			bool overlap = pacX == ghostX && pacY == ghostY;
+			bool collision = pacX == ghost->getPreviousX() && pacY == ghost->getPreviousY() && mPacman->getPreviousX() == ghostX && mPacman->getPreviousY() == ghostY;
 
-			if (pacX == ghost->getX() && pacY == ghost->getY())
+			if (collision || overlap)
 			{
-				mPacman->decreaseLives();
-				SoundManager::playSFX("Fail.wav");
-
-				if (mPacman->getLives() <= 0) 
+				if (ghost->getState() == GhostState::FRIGHTENED) 
 				{
-					updateHighScore(mCurrentScore);
-					mLevelRun = false;
-					mCurrentGameState = GameState::Menu;
+					mCurrentScore += 200;
+					//Sound effect
+					SoundManager::playSFX("GhostBlue.wav");
+					ghost->setState(GhostState::EATEN);
+					
 				}
-				else 
+				else if(ghost->getState() != GhostState::EATEN)
 				{
-					mPacman->setX(currentMap.pacmanX);
-					mPacman->setY(currentMap.pacmanY);
-					mPacman->setCurDirection(Direction::NONE);
-					mPacman->setNextDirection(Direction::NONE);
+					mPacman->decreaseLives();
+					SoundManager::playSFX("Fail.wav");
 
-					for (int i = 0; i < mGhosts.size(); i++) 
+					if (mPacman->getLives() <= 0)
 					{
-						if (mGhosts[i] != nullptr) 
+						mLevelRun = false;
+						mWindow->ClearBuffer();
+						renderGame();
+
+						std::string gameOverText = "  GAME OVER  ";
+						int bannerX = (currentMap.getCols() / 2) - (static_cast<int>(gameOverText.length()) / 2);
+						int bannerY = currentMap.getRows() / 2;
+
+						WORD blackBackground = 0;
+						for (int offset = -2; offset < static_cast<int>(gameOverText.length()) + 2; offset++) 
 						{
-							mGhosts[i]->setX(currentMap.ghostX[i]);
-							mGhosts[i]->setY(currentMap.ghostY[i]);
+							mWindow->Draw(bannerX + offset, bannerY - 1,' ', blackBackground);
+							mWindow->Draw(bannerX + offset, bannerY,  ' ', blackBackground);
+							mWindow->Draw(bannerX + offset, bannerY + 1, ' ', blackBackground);
 						}
+						WORD deadColor = FOREGROUND_RED | FOREGROUND_INTENSITY;
+						for (size_t i = 0; i < gameOverText.length(); i++)
+						{
+							mWindow->Draw(bannerX + static_cast<int>(i), bannerY, gameOverText[i], deadColor);
+							
+						}
+						mWindow->Display();
+
+						Sleep(3000);
+
+						updateHighScore(mCurrentScore);
+						mCurrentGameState = GameState::Menu;
+
 					}
-					system("cls");
-					Sleep(1000);
+					else//Reset positions
+					{
+						mPacman->setX(currentMap.pacmanX);
+						mPacman->setY(currentMap.pacmanY);
+						mPacman->setCurDirection(Direction::NONE);
+						mPacman->setNextDirection(Direction::NONE);
+
+						for (size_t j = 0; j < mGhosts.size(); j++)
+						{
+							if (mGhosts[j] != nullptr)
+							{
+								size_t coordIndex = j % currentMap.ghostX.size();
+
+								mGhosts[j]->setX(currentMap.ghostX[coordIndex]);
+								mGhosts[j]->setY(currentMap.ghostY[coordIndex]);
+								mGhosts[j]->setState(GhostState::CHASE);
+							}
+						}
+						mGhostStateTimer = 0;
+						mPowerPellet = false;
+						mPowerPelletTimer = 0;
+
+						mWindow->ClearBuffer();
+						mWindow->Display();
+						Sleep(1000);
+					}
+					break;
 				}
-				break;
 			}
+		
+	}
+	if (!currentMap.clearedPellets()) 
+	{
+		mLevelRun = false;
+		//SoundManager::stop();
+		//SoundManager::playSFX();
+
+		int middleScreenX = currentMap.getCols() / 2 - 5;
+		int middleScreenY = currentMap.getRows() / 2;
+		std::string victoryText = "Victory!";
+
+		WORD winColor = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+		for (size_t i = 0; i < victoryText.length(); i++) 
+		{
+			mWindow->Draw(middleScreenX + static_cast<int>(i), middleScreenY, victoryText[i], winColor);
 		}
+		mWindow->Display();
+
+		Sleep(3000);
+		mCurrentLevel++;
+		mCurrentScore += 1000;
+		mCurrentGameState = GameState::Start;
 	}
 }
 
@@ -520,67 +1020,4 @@ void GameManager::cleanLevel()
 	mGhosts.clear();
 }
 
-//Windows code for Cursor
-void GameManager::setCursorPosition(int x, int y) const
-{
-	COORD coord = { static_cast<short>(x), static_cast<short>(y) };
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
-}
-
-void GameManager::hideConsoleCursor() const
-{
-	HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_CURSOR_INFO cursorInfo;
-	GetConsoleCursorInfo(out, &cursorInfo);
-	cursorInfo.bVisible = FALSE;
-	SetConsoleCursorInfo(out, &cursorInfo);
-}
-
-//Attempt to make game window map size(updated because afer checking again I was doing the function wrong, I need to also buffer the window as well as buffer)
-void GameManager::fitConsoleToMap(int mapRows, int mapCols)
-{
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (hConsole == INVALID_HANDLE_VALUE) 
-	{
-		return;
-	}
-
-	//Space for Hud
-	short paddingWidth = 5;
-	short paddingHeight = 8;
-
-	short finalWidth = static_cast<short>(mapCols + paddingWidth);
-	short finalHeight = static_cast<short>(mapRows + paddingHeight);
-	
-	//Keeps window from exceeding desktop
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	if (GetConsoleScreenBufferInfo(hConsole, &csbi)) 
-	{
-		if (finalWidth > csbi.dwMaximumWindowSize.X) finalWidth = csbi.dwMaximumWindowSize.X;
-		if (finalHeight > csbi.dwMaximumWindowSize.Y) finalHeight = csbi.dwMaximumWindowSize.Y;
-	}
-	//Shrinks window size
-	SMALL_RECT minimalWin = { 0,0, 1,1 };
-	SetConsoleWindowInfo(hConsole, TRUE, &minimalWin);
-	//Resize the screen buffer
-	COORD bufferSize = { finalWidth, finalHeight };
-	SetConsoleScreenBufferSize(hConsole, bufferSize);
-	//Expand the view window
-	SMALL_RECT windowSize = { 0,0, static_cast<short>(finalWidth - 1), static_cast<short>(finalHeight - 1) };
-	SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
-}
-
-void GameManager::setConsoleFullscreen(bool fullscreen)
-{
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (hConsole == INVALID_HANDLE_VALUE)
-	{
-		return;
-	}
-
-	DWORD flags = fullscreen ? CONSOLE_FULLSCREEN_MODE : CONSOLE_WINDOWED_MODE;
-	COORD newSize;
-
-	SetConsoleDisplayMode(hConsole, flags, &newSize);
-}
 
