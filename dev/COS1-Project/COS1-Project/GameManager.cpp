@@ -1,7 +1,4 @@
 #include "gameManager.h"
-#include <Windows.h>
-#include <iostream>
-
 
 GameManager::GameManager() : currentMap(0,0)
 {
@@ -64,9 +61,32 @@ void GameManager::run()
 	}
 }
 
+
 int GameManager::getHighscore() const
 {
 	return mHighScore;
+}
+
+void GameManager::killSequids(int targetX, int TargetY)
+{
+	for (int i = static_cast<int>(mGhosts.size()) - 1; i >= 0; i--) 
+	{
+		Ghost* ghost = mGhosts[i];
+		if(ghost != nullptr && ghost->getX() == targetX && ghost->getY() == TargetY)
+		{
+			if(mChosenDifficulty == DifficultyChoice::Viltrumite)
+			{
+				delete ghost;
+				mGhosts.erase(mGhosts.begin() + i);
+				mCurrentScore += 100;
+			}
+			else if (ghost->getState() != GhostState::EATEN)
+			{
+				ghost->setState(GhostState::EATEN);
+				mCurrentScore += 100;
+			}
+		}
+	}
 }
 
 void GameManager::loadScores()
@@ -129,7 +149,7 @@ void GameManager::updateHighScore(int finalScore)
 void GameManager::handleMenuState()
 {
 	gameMenu.drawMenu();
-
+	
 	MenuChoice choice = gameMenu.getUserChoice();
 
 	if (GetAsyncKeyState(VK_RETURN) & 0x8000)
@@ -259,13 +279,26 @@ void GameManager::initialLevel()
 
 	mLevelRun = true;
 	mFruitTimer = 0;
+
+	//Reset wave counters for Viltrumite mode
+	mCurrentWave = 1;
+	mGhostsSpawnedInWave = 0;
+	mWaveSpawnTimer = 0;
+	mWaveSpeedModifier = 1.0;
+
 	//load map
 	std::string mapFileName = "lvl" + std::to_string(mCurrentLevel) + ".txt";
 	currentMap = MapLoader::loadMap(mapFileName);
+
 	if (currentMap.getRows() == 0 || currentMap.getCols() == 0)
 	{
-		currentMap = MapLoader::loadMap("lvl2.txt");
-		mBaseGhostSpeed += 0.05;
+		std::cout << "\nFailed to load Map: " << mapFileName << "\n";
+		std::cout << "Loading previous Map.\n";
+		Sleep(3000);
+		int previousMapLevel = (mCurrentLevel > 1) ? (mCurrentLevel - 1) : 1;
+		std::string previousMap = "lvl" + std::to_string(previousMapLevel) + ".txt";
+		currentMap = MapLoader::loadMap(previousMap);
+		mBaseGhostSpeed += 0.05;//Increase difficulty
 	}
 
 	ConsoleWindow::fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
@@ -276,7 +309,7 @@ void GameManager::initialLevel()
 		mWindow->clearScreen();
 	}
 	
-	int startingLives = 3;
+	int startingLives = 0;
 	mBaseGhostSpeed = 0.6;
 	size_t ghostSpawnCount = currentMap.ghostX.size();
 
@@ -298,7 +331,7 @@ void GameManager::initialLevel()
 	case DifficultyChoice::Viltrumite:
 		startingLives = 1;
 		mBaseGhostSpeed = 0.75;
-		ghostSpawnCount = currentMap.ghostX.empty() ? 4: 80;
+		ghostSpawnCount = currentMap.ghostX.empty() ? 4: 20;
 		break;
 	default:
 		break;
@@ -317,13 +350,22 @@ void GameManager::initialLevel()
 		FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
 		FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY
 	};
-	//Prevents out of bounds crash
+	//Spawning loop
 	for (size_t i = 0; i < ghostSpawnCount; i++)
 	{
 		size_t coordIndex = i % currentMap.ghostX.size();
 		WORD color = ghostColors[i % 4];
 
-		mGhosts.push_back(new Ghost(currentMap.ghostX[coordIndex], currentMap.ghostY[coordIndex], mBaseGhostSpeed, 'G', color));
+		if (mChosenDifficulty == DifficultyChoice::Viltrumite) 
+		{
+			Sequids* newSequid = new Sequids(currentMap.ghostX[coordIndex], currentMap.ghostY[coordIndex], mBaseGhostSpeed, color);
+			newSequid->setSpeed(mWaveSpeedModifier);
+			mGhosts.push_back(newSequid);
+		}
+		else 
+		{
+			mGhosts.push_back(new Ghost(currentMap.ghostX[coordIndex], currentMap.ghostY[coordIndex], mBaseGhostSpeed, 'G', color));
+		}
 		mExitGhostHouse.push_back(static_cast<int>(i) * spacing);
 	}
 	
@@ -357,7 +399,11 @@ void GameManager::initialLevel()
 void GameManager::gameplayLoop()
 {
 	
-	system("cls");	
+	//system("cls");
+	if (mWindow != nullptr)
+	{
+		mWindow->clearScreen();
+	}
 
 	mPowerPellet = false;
 	mPowerPelletTimer = 0;
@@ -370,28 +416,37 @@ void GameManager::gameplayLoop()
 		mGhostStateTimer++;
 		mGhostHouseTimer++;
 
-		bool scatterTransition = (mGhostStateTimer >=200);
-		bool chaseTransition = (mGhostStateTimer >= 270);
+		int curentCycle = mGhostStateTimer % 270;
+		//Timer goes if ghost arent running away
+		/*if (!mPowerPellet) 
+		{
+			mGhostStateTimer++;
+		}*/
 
-		
-		if (scatterTransition || chaseTransition)
+		//bool scatterTransition = (mGhostStateTimer >=200);
+		//bool chaseTransition = (mGhostStateTimer >= 270);
+
+		//Handle Scatter(7secs) & Chase(20secs) conditions 
+		if (mGhostStateTimer == 200)
 		{
 			for (Ghost* ghost : mGhosts)
 			{
-				if (scatterTransition && ghost->getState() == GhostState::CHASE)
+				if (ghost != nullptr && ghost->getState() == GhostState::CHASE)
 				{
 					ghost->setState(GhostState::SCATTER);					
 				}
-				else if (chaseTransition && ghost->getState() == GhostState::SCATTER)
-				{
-					ghost->setState(GhostState::CHASE);					
-				}
-
 			}
-			if (scatterTransition || chaseTransition)
+		}
+		else if (mGhostStateTimer == 270)
+		{
+			for (Ghost* ghost : mGhosts)
 			{
-				mGhostStateTimer = 0;
+				if (ghost != nullptr && ghost->getState() == GhostState::SCATTER)
+				{
+					ghost->setState(GhostState::CHASE);
+				}
 			}
+			mGhostStateTimer = 0; //Reset timer
 		}
 			
 		//Fruit timer
@@ -416,6 +471,7 @@ void GameManager::gameplayLoop()
 			mShowFruit = false;
 			mFruitTimer = 0;
 		}
+		//Power pellet timer
 		if (mPowerPellet) 
 		{
 			mPowerPelletTimer--;
@@ -434,9 +490,15 @@ void GameManager::gameplayLoop()
 		}
 
 		//Player input
-		mPacman->handleInput();
-		updateGame();
+		if (mPacman != nullptr)
+		{ 
+			mPacman->handleInput();
+		}
 
+		updateGame();
+		checkCollisions();
+		
+		//Fullscreen toggle
 		if (GetAsyncKeyState(VK_F11) & 0x8000)
 		{
 			//flip variable
@@ -448,12 +510,12 @@ void GameManager::gameplayLoop()
 			{
 				ConsoleWindow::fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
 			}
-			system("cls");
+			//system("cls");
 			Sleep(250);
 		}
-		checkCollisions();
 		
-
+		
+		//Return to Main menu
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) 
 		{
 			mLevelRun = false;
@@ -464,6 +526,12 @@ void GameManager::gameplayLoop()
 		Sleep(100);
 	}
 	system("cls");
+
+	if (mWindow != nullptr) 
+	{
+		mWindow->clearScreen();
+	}
+
 	mCurrentGameState = GameState::Menu;
 	updateHighScore(mCurrentScore);
 	cleanLevel();
@@ -481,6 +549,34 @@ void GameManager::updateGame()
 		//return;
 		ConsoleWindow::setCursorPosition(mPacman->getX(), mPacman->getY());
 		std::cout << " ";
+	}
+
+	//Sequid wave Spawner
+	if (mChosenDifficulty == DifficultyChoice::Viltrumite && mCurrentWave < 4) 
+	{
+		mWaveSpawnTimer++;
+		if (mWaveSpawnTimer >= 300) 
+		{
+			mWaveSpawnTimer = 0;
+			mCurrentWave++;
+			mWaveSpeedModifier += 0.15;
+			WORD sequidColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+
+			for (size_t i = 0; i < 20; i++)
+			{
+				size_t coordIndex = i % currentMap.ghostX.size();
+				double dynamicSpeed = mBaseGhostSpeed * mWaveSpeedModifier;
+
+				Sequids* sequidWave = new Sequids(currentMap.ghostX[coordIndex], currentMap.ghostY[coordIndex], dynamicSpeed, sequidColor);
+				sequidWave->SetWaveSpeed(mWaveSpeedModifier);
+
+				mGhosts.push_back(sequidWave);
+				mExitGhostHouse.push_back(i * 30);//Spacing
+			}
+			//SoundManager::playSFX("");
+		}
+
+		
 	}
 
 	int blinkyX = 0;
@@ -565,19 +661,22 @@ void GameManager::updateGame()
 		mIsAttacking = true;
 		mAttackVisualX = attackX;
 		mAttackVisualY = attackY;
-		for (Ghost* ghost : mGhosts)
-		{
-			if (ghost != nullptr && ghost->getX() == attackX && ghost->getY() == attackY)
-			{
-				if (ghost->getState() != GhostState::EATEN) 
-				{
-					ghost->setState(GhostState::EATEN);
-					mCurrentScore += 100;
-					//sound effect
-				}
-			}
-		}
+		killSequids(attackX, attackY);
+		//for (Ghost* ghost : mGhosts)
+		//{
+		//	if (ghost != nullptr && ghost->getX() == attackX && ghost->getY() == attackY)
+		//	{
+		//		if (ghost->getState() != GhostState::EATEN) 
+		//		{
+		//			ghost->setState(GhostState::EATEN);
+		//			mCurrentScore += 100;
+		//			//sound effect
+		//		}
+		//	}
+		//}
 	}
+
+	//bool isViltrumiteMode = (mChosenDifficulty == DifficultyChoice::Viltrumite);
 	////////////////
 	//Infinity Ray//
 	////////////////
@@ -632,24 +731,24 @@ void GameManager::updateGame()
 				mInfinityRayY[mActiveRayTiles] = rayY;
 				mActiveRayTiles++;
 			}
-			
-			for (Ghost* ghost : mGhosts)
-			{
-				if (ghost != nullptr && ghost->getX() == rayX && ghost->getY() == rayY)
-				{
-					if (ghost->getState() != GhostState::EATEN)
-					{
-						ghost->setState(GhostState::EATEN);
-						mCurrentScore += 100;
-						//sound effect
-					}
-				}
-			}
+			killSequids(rayX, rayY);
+			//for (Ghost* ghost : mGhosts)
+			//{
+			//	if (ghost != nullptr && ghost->getX() == rayX && ghost->getY() == rayY)
+			//	{
+			//		if (ghost->getState() != GhostState::EATEN)
+			//		{
+			//			ghost->setState(GhostState::EATEN);
+			//			mCurrentScore += 100;
+			//			//sound effect
+			//		}
+			//	}
+			//}
 		}
 	}
 
 	//int exitGhostHouse[] = { 0,10,15,20 };
-	int doorX = 13;//  currentMap.getCols() / 2;
+	int doorX = 13; //currentMap.getCols() / 2;
 	int doorY = 10; //(currentMap.getRows() / 2) - 1;
 
 	for (size_t i = 0; i < mGhosts.size(); i++)
@@ -677,15 +776,25 @@ void GameManager::updateGame()
 
 		if (ghost->canMove())
 		{
-			bool insideHouse = (ghost->getY() > 11);
+			bool insideHouse = (ghost->getY() > 10);//was 11
 
-			if (insideHouse && mGhostHouseTimer < mExitGhostHouse[i] && ghost->getState() != GhostState::FRIGHTENED && ghost->getState() != GhostState::EATEN)
+			int ghostRelease = (i < mExitGhostHouse.size()) ? mExitGhostHouse[i] : 0;
+
+			if (insideHouse && mGhostHouseTimer < ghostRelease && ghost->getState() != GhostState::FRIGHTENED && ghost->getState() != GhostState::EATEN)
 			{
 				ghost->updateAI(currentMap, 13, 12, mPacman->getCurrentDirection(), blinkyX, blinkyY);
 			}
 			else if (insideHouse)
 			{
-				ghost->updateAI(currentMap, doorX, doorY, mPacman->getCurrentDirection(), blinkyX, blinkyY);
+				//ghost->updateAI(currentMap, doorX, doorY, mPacman->getCurrentDirection(), blinkyX, blinkyY);
+				if (ghost->getX() != 13) 
+				{
+					ghost->updateAI(currentMap, 13, ghost->getY(), mPacman->getCurrentDirection(), blinkyX, blinkyY);
+				}
+				else 
+				{
+					ghost->updateAI(currentMap, 13, 9, mPacman->getCurrentDirection(), blinkyX, blinkyY);
+				}
 			}
 			else
 			{
@@ -712,6 +821,8 @@ void GameManager::renderGame()
 	int mapCols = currentMap.getCols();
 	WORD white = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 	WORD yellow = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+	WORD flashColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+	WORD rayColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
 
 	
 
@@ -797,27 +908,23 @@ void GameManager::renderGame()
 			}
 			mWindow->Draw(ghost->getX(), ghost->getY(), ghostChar, ghostColor);
 		}
-		////////////////////////////
-		//Invinible Visual Attacks//
-		////////////////////////////
 		
-		//////////////////////
-		//Punch 1 tile ahead//
-		//////////////////////
-		if (mIsAttacking && mAttackVisualX >= 0 && mAttackVisualY >= 0) 
+		//Invinible Visual Attacks				
+		if (mIsAttacking)
 		{
-			WORD flashColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-			mWindow->Draw(mAttackVisualX, mAttackVisualY, 'X', flashColor);
-		}
-		//////////////////////////////
-		//InfinityRay 3 tiles ahead //
-		//////////////////////////////
-		if (mChosenDifficulty == DifficultyChoice::Viltrumite && mIsAttacking)
-		{
-			WORD rayColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-			for (int i = 0; i < mActiveRayTiles; i++) 
-			{ 
-				mWindow->Draw(mInfinityRayX[i], mInfinityRayY[i], '>', rayColor);
+			if (mAttackVisualX >= 0 && mAttackVisualY >= 0)
+			{
+				//Punch 1 tile ahead			
+				mWindow->Draw(mAttackVisualX, mAttackVisualY, 'X', flashColor);
+			}
+
+			if (mChosenDifficulty == DifficultyChoice::Viltrumite)
+			{
+				//InfinityRay 3 tiles ahead				
+				for (int i = 0; i < mActiveRayTiles; i++)
+				{
+					mWindow->Draw(mInfinityRayX[i], mInfinityRayY[i], '>', rayColor);
+				}
 			}
 		}
 	}
@@ -838,7 +945,7 @@ void GameManager::renderGame()
 
 	std::cout << WHITE << "           ";
 	ConsoleWindow::setCursorPosition(mapCols - 15, BottumHud);
-	std::cout << YELLOW << "FRUIT: " << RED << "%" << RESET << "    \n";
+	std::cout << YELLOW << "  FRUIT: " << RED << "%" << RESET << "    \n";
 
 }
 
@@ -901,86 +1008,29 @@ void GameManager::checkCollisions()
 		{
 			continue;
 		}
-			int ghostX = ghost->getX();
-			int ghostY = ghost->getY();
-			bool overlap = pacX == ghostX && pacY == ghostY;
-			bool collision = pacX == ghost->getPreviousX() && pacY == ghost->getPreviousY() && mPacman->getPreviousX() == ghostX && mPacman->getPreviousY() == ghostY;
+		int ghostX = ghost->getX();
+		int ghostY = ghost->getY();
+		bool overlap = pacX == ghostX && pacY == ghostY;
+		bool collision = pacX == ghost->getPreviousX() && pacY == ghost->getPreviousY() && mPacman->getPreviousX() == ghostX && mPacman->getPreviousY() == ghostY;
 
-			if (collision || overlap)
-			{
-				if (ghost->getState() == GhostState::FRIGHTENED) 
-				{
-					mCurrentScore += 200;
-					//Sound effect
-					SoundManager::playSFX("GhostBlue.wav");
-					ghost->setState(GhostState::EATEN);
+		if (!collision && !overlap)
+		{
+			continue;
+		}
+		if (ghost->getState() == GhostState::FRIGHTENED) 
+		{
+			mCurrentScore += 200;
+			//Sound effect
+			SoundManager::playSFX("GhostBlue.wav");
+			ghost->setState(GhostState::EATEN);
 					
-				}
-				else if(ghost->getState() != GhostState::EATEN)
-				{
-					mPacman->decreaseLives();
-					SoundManager::playSFX("Fail.wav");
-
-					if (mPacman->getLives() <= 0)
-					{
-						mLevelRun = false;
-						mWindow->ClearBuffer();
-						renderGame();
-
-						std::string gameOverText = "  GAME OVER  ";
-						int bannerX = (currentMap.getCols() / 2) - (static_cast<int>(gameOverText.length()) / 2);
-						int bannerY = currentMap.getRows() / 2;
-
-						WORD blackBackground = 0;
-						for (int offset = -2; offset < static_cast<int>(gameOverText.length()) + 2; offset++) 
-						{
-							mWindow->Draw(bannerX + offset, bannerY - 1,' ', blackBackground);
-							mWindow->Draw(bannerX + offset, bannerY,  ' ', blackBackground);
-							mWindow->Draw(bannerX + offset, bannerY + 1, ' ', blackBackground);
-						}
-						WORD deadColor = FOREGROUND_RED | FOREGROUND_INTENSITY;
-						for (size_t i = 0; i < gameOverText.length(); i++)
-						{
-							mWindow->Draw(bannerX + static_cast<int>(i), bannerY, gameOverText[i], deadColor);
-							
-						}
-						mWindow->Display();
-
-						Sleep(3000);
-
-						updateHighScore(mCurrentScore);
-						mCurrentGameState = GameState::Menu;
-
-					}
-					else//Reset positions
-					{
-						mPacman->setX(currentMap.pacmanX);
-						mPacman->setY(currentMap.pacmanY);
-						mPacman->setCurDirection(Direction::NONE);
-						mPacman->setNextDirection(Direction::NONE);
-
-						for (size_t j = 0; j < mGhosts.size(); j++)
-						{
-							if (mGhosts[j] != nullptr)
-							{
-								size_t coordIndex = j % currentMap.ghostX.size();
-
-								mGhosts[j]->setX(currentMap.ghostX[coordIndex]);
-								mGhosts[j]->setY(currentMap.ghostY[coordIndex]);
-								mGhosts[j]->setState(GhostState::CHASE);
-							}
-						}
-						mGhostStateTimer = 0;
-						mPowerPellet = false;
-						mPowerPelletTimer = 0;
-
-						mWindow->ClearBuffer();
-						mWindow->Display();
-						Sleep(1000);
-					}
-					break;
-				}
-			}
+		}
+		else if(ghost->getState() != GhostState::EATEN)
+		{
+			playerDeath();			
+			return;
+		}
+			
 		
 	}
 	if (!currentMap.clearedPellets()) 
@@ -1019,5 +1069,91 @@ void GameManager::cleanLevel()
 	}
 	mGhosts.clear();
 }
+void GameManager::playerDeath()
+{
+	mPacman->decreaseLives();
+	SoundManager::playSFX("Fail.wav");
 
+	if (mPacman->getLives() <= 0)
+	{
+		mLevelRun = false;
+		mWindow->ClearBuffer();
+		renderGame();
+
+		std::string gameOverText = "  GAME OVER  ";
+		int bannerX = (currentMap.getCols() / 2) - (static_cast<int>(gameOverText.length()) / 2);
+		int bannerY = currentMap.getRows() / 2;
+
+		WORD blackBackground = 0;
+		for (int offset = -2; offset < static_cast<int>(gameOverText.length()) + 2; offset++)
+		{
+			mWindow->Draw(bannerX + offset, bannerY - 1, ' ', blackBackground);
+			mWindow->Draw(bannerX + offset, bannerY, ' ', blackBackground);
+			mWindow->Draw(bannerX + offset, bannerY + 1, ' ', blackBackground);
+		}
+		WORD deadColor = FOREGROUND_RED | FOREGROUND_INTENSITY;
+		for (size_t i = 0; i < gameOverText.length(); i++)
+		{
+			mWindow->Draw(bannerX + static_cast<int>(i), bannerY, gameOverText[i], deadColor);
+
+		}
+		mWindow->Display();
+
+		Sleep(3000);
+
+		updateHighScore(mCurrentScore);
+		mCurrentGameState = GameState::Menu;
+
+	}
+	else//Reset positions
+	{
+		mPacman->setX(currentMap.pacmanX);
+		mPacman->setY(currentMap.pacmanY);
+		mPacman->setCurDirection(Direction::NONE);
+		mPacman->setNextDirection(Direction::NONE);
+
+		for (size_t j = 0; j < mGhosts.size(); j++)
+		{
+			if (mGhosts[j] != nullptr)
+			{
+				size_t coordIndex = j % currentMap.ghostX.size();
+
+				mGhosts[j]->setX(currentMap.ghostX[coordIndex]);
+				mGhosts[j]->setY(currentMap.ghostY[coordIndex]);
+				mGhosts[j]->setState(GhostState::CHASE);
+			}
+		}
+		mGhostStateTimer = 0;
+		mGhostHouseTimer = 0;
+		mPowerPellet = false;
+		mPowerPelletTimer = 0;
+
+		mWindow->ClearBuffer();
+		mWindow->Display();
+		Sleep(1000);
+	}
+}
+void GameManager::drawInvinvicibleMenu()
+{
+	std::ifstream file("PacMan_Invincible.txt");
+	if (!file.is_open())
+	{
+		//If if fails to laod use original menu
+		gameMenu.drawMenu();
+		return;
+	}
+	mWindow->ClearBuffer();
+	std::string line;
+	int currentRow = 5;
+
+	while (std::getline(file, line))
+	{
+		for (size_t x = 0; x < line.length() && x < mWindow->getWidth(); x++)
+		{
+			mWindow->Draw(static_cast<int>(x), currentRow, line[x], FOREGROUND_RED| FOREGROUND_INTENSITY);
+		}
+		currentRow++;
+	}
+	file.close();
+}
 

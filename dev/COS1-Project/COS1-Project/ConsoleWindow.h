@@ -17,6 +17,7 @@ public:
 	static void fitConsoleToMap(int mapRows, int mapCols);
 	static void hideConsoleCursor();
 	static void setCursorPosition(int x, int y);
+	int getWidth() const;
 	ConsoleWindow(int width, int height);
 	~ConsoleWindow();
 	void ClearBuffer();

@@ -12,6 +12,9 @@
 #include "Ghost.h"
 #include "SoundManager.h"
 #include "ConsoleWindow.h"
+#include <Windows.h>
+#include <iostream>
+#include "Sequids.h"
 
 enum class GameState { Menu, Start, HighScores, Difficulty, Exit };
 
@@ -47,12 +50,19 @@ private:
 	int mGhostStateTimer;
 	int mGhostHouseTimer;
 	double mBaseGhostSpeed;
+
 	bool mIsAttacking;
 	int mAttackVisualX = -1;
 	int mAttackVisualY = -1;
 	int mInfinityRayX[3] = { -1 , -1 , -1 };
 	int mInfinityRayY[3] = { -1 , -1 , -1 };
 	int mActiveRayTiles = 0;
+
+
+	int mCurrentWave = 1;
+	int mGhostsSpawnedInWave = 0;
+	int mWaveSpawnTimer = 0;
+	double mWaveSpeedModifier = 1.0;
 	
 	
 
@@ -76,6 +86,7 @@ private:
 	void renderGame();
 	void checkCollisions();
 	void cleanLevel();
+	void playerDeath();
 	
 	ConsoleWindow* mWindow;
 
@@ -85,6 +96,8 @@ public:
 	GameManager();
 	~GameManager();
 	void run();
+	void drawInvinvicibleMenu();
 	int getHighscore() const;
+	void killSequids(int targetX, int TargetY);
 };
 

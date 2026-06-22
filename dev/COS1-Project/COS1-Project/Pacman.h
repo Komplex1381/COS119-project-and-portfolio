@@ -4,6 +4,7 @@
 #include <windows.h>
 #include "SoundManager.h"
 
+
 class Pacman :  public GameCharacter
 {
 private:

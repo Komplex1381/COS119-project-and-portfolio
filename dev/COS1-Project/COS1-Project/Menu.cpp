@@ -1,8 +1,5 @@
 #include "Menu.h"
-#include <string>
-#include "Helper.h"
-#include <conio.h> // for windows input
-#include <Windows.h>
+
 
 
 
@@ -20,6 +17,17 @@ void Menu::drawMenu()
 {
 	COORD coord = { 0,0 };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+
+	std::string scoreStr = std::to_string(mScoretoShow);
+	int scoreLegnth = static_cast<int>(scoreStr.length());
+	int totalWidth = 31;//28
+	int padding = totalWidth - scoreLegnth;
+
+	if (padding < 0)
+	{
+		padding = 0;
+	}
+	
 
 	
 	std::cout << BLUE << "##########################################################\n"; //58
@@ -47,13 +55,37 @@ void Menu::drawMenu()
 	std::cout << "#                                                        #\n";
 	std::cout << "#                                                        #\n";	
 	std::cout << "#                    "<< RED << "   HIGH SCORE" << BLUE << "                       #\n";	
-	std::cout << "#                        " << WHITE << mScoretoShow << BLUE << "                            #\n";//score display needs to be fixed
+	std::cout << "#                        " << WHITE << mScoretoShow << BLUE << std::string(padding, ' ') << " #\n";//score display needs to be fixed
 	std::cout << "#                                                        #\n";
 	std::cout << "##########################################################\n";
 	std::cout << RESET;
 	std::cout << WHITE << "press " << RED << "ESC" << WHITE <<" key at anytime to return to game menu.\n";
 	std::cout << WHITE << "Player " << YELLOW << "movement" << WHITE<< ":" << RED << " W, A, S, D " << WHITE << "or" << RED << " Arrow keys" << RESET;
 }
+
+//void Menu::drawInvinvicibleMenu()
+//{
+//	std::ifstream file("Game_Menu.txt");
+//	if (!file.is_open()) 
+//	{
+//		//If if fails to laod use original menu
+//		drawMenu();
+//		return;
+//	}
+//	mWindow->ClearBuffer();
+//	std::string line;
+//
+//	while (std::getline(file, line)) 
+//	{
+//		for (size_t x = 0; x < line.length() && x < mWindow->getWidth(); x++) 
+//		{
+//			mWindow->Draw(static_cast<int>(x), currentRow, line[x], FOREGROUND_YELLOW | FOREGROUND_INTENSITY);
+//		}
+//		currentRow++;
+//	}
+//	file.close();
+//	
+//}
 
 void Menu::setHighScore(int score)
 {

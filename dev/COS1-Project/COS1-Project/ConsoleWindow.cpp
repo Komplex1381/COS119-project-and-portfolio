@@ -46,6 +46,11 @@ void ConsoleWindow::setCursorPosition(int x, int y)
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
+int ConsoleWindow::getWidth() const
+{
+	return mScreenWidth;
+}
+
 void ConsoleWindow::hideConsoleCursor()
 {
 	HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
