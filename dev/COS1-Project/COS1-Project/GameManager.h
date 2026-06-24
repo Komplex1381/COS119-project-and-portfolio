@@ -26,6 +26,7 @@ private:
 	int mCurrentScore;
 	int mHighScore;
 	int mCurrentLevel;
+	int mCurrentRound;
 	DifficultyChoice mChosenDifficulty;
 	bool mLevelRun;
 	bool mFullscreen = false;
@@ -95,8 +96,7 @@ private:
 public:
 	GameManager();
 	~GameManager();
-	void run();
-	void drawInvinvicibleMenu();
+	void run();	
 	int getHighscore() const;
 	void killSequids(int targetX, int TargetY);
 };

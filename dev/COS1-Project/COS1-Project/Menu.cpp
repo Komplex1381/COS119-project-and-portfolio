@@ -63,29 +63,7 @@ void Menu::drawMenu()
 	std::cout << WHITE << "Player " << YELLOW << "movement" << WHITE<< ":" << RED << " W, A, S, D " << WHITE << "or" << RED << " Arrow keys" << RESET;
 }
 
-//void Menu::drawInvinvicibleMenu()
-//{
-//	std::ifstream file("Game_Menu.txt");
-//	if (!file.is_open()) 
-//	{
-//		//If if fails to laod use original menu
-//		drawMenu();
-//		return;
-//	}
-//	mWindow->ClearBuffer();
-//	std::string line;
-//
-//	while (std::getline(file, line)) 
-//	{
-//		for (size_t x = 0; x < line.length() && x < mWindow->getWidth(); x++) 
-//		{
-//			mWindow->Draw(static_cast<int>(x), currentRow, line[x], FOREGROUND_YELLOW | FOREGROUND_INTENSITY);
-//		}
-//		currentRow++;
-//	}
-//	file.close();
-//	
-//}
+
 
 void Menu::setHighScore(int score)
 {
