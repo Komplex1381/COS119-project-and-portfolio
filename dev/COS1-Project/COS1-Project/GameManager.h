@@ -54,6 +54,10 @@ private:
 	double mBaseGhostSpeed;
 
 	bool mIsAttacking;
+	bool mIsBeamActive = false;
+	int mBeamX = 0;
+	int mBeamY = 0;
+	Direction mBeamDirection = Direction::NONE;
 	int mAttackVisualX = -1;
 	int mAttackVisualY = -1;
 	int mInfinityRayX[3] = { -1 , -1 , -1 };

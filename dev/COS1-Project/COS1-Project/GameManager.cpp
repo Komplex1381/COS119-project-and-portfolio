@@ -44,8 +44,7 @@ void GameManager::run()
 		case GameState::Menu:
 			handleMenuState();
 			break;
-		case GameState::Start:
-			//initialLevel();
+		case GameState::Start:			
 			gameplayLoop();
 			break;
 		case GameState::HighScores:
@@ -737,57 +736,150 @@ void GameManager::updateGame()
 	////////////////
 	if (mPacman != nullptr && mChosenDifficulty == DifficultyChoice::Viltrumite && (GetAsyncKeyState('I') & 0x8000))
 	{
-		
-		Direction currentFacing = mPacman->getCurrentDirection();
-
-		if (currentFacing == Direction::NONE) 
+		//mIsBeamActive = true;
+		if (!mIsBeamActive) 
 		{
-			currentFacing = Direction::RIGHT;
-		}
-		mIsAttacking = true;
+			Direction currentFacing = mPacman->getCurrentDirection();
 
-		for (int step = 1; step <= 3; step++)
-		{
-			int rayX = mPacman->getX();
-			int rayY = mPacman->getY();
+			if (currentFacing == Direction::NONE)
+			{
+				currentFacing = Direction::RIGHT;
+			}	
+
+			
+			mBeamX = mPacman->getX();
+			mBeamY = mPacman->getY();
+			mBeamDirection = currentFacing;
 
 
-			switch (currentFacing)
+			switch (mBeamDirection)
 			{
 			case Direction::UP:
-				rayY -= step;
+				mBeamY--;
 				break;
 			case Direction::DOWN:
-				rayY += step;
+				mBeamY++;
 				break;
 			case Direction::LEFT:
-				rayX -= step;
+				mBeamX--;
 				break;
 			case Direction::RIGHT:
-				rayX += step;
+				mBeamX++;
 				break;
 			default:
 				break;
 			}
 			//Check map boundry
-			if (rayX < 0 || rayX >= currentMap.getCols() || rayY < 0 || rayY >= currentMap.getRows())
+			if (mBeamX >= 0 && mBeamX < currentMap.getCols() && mBeamY >= 0 && mBeamY < currentMap.getRows())
 			{
-				break;
+				if (currentMap.getTile(mBeamY, mBeamX) != 3)
+				{
+					mIsBeamActive = true;
+					SoundManager::playSFX("laser.wav");
+				}
 			}
-			//Wall block
-			if (currentMap.getTile(rayY, rayX) == 3) 
-			{
-				break;
-			}
-			//protection against array limits
-			if (mActiveRayTiles < 4)
-			{
-				mInfinityRayX[mActiveRayTiles] = rayX;
-				mInfinityRayY[mActiveRayTiles] = rayY;
-				mActiveRayTiles++;
-			}
-			killSequids(rayX, rayY);
 			
+						
+		}
+		//Direction currentFacing = mPacman->getCurrentDirection();
+
+		//if (currentFacing == Direction::NONE) 
+		//{
+		//	currentFacing = Direction::RIGHT;
+		//}
+		//mIsBeamActive = true;
+
+		//for (int step = 1; step <= 3; step++)
+		//{
+		//	int rayX = mPacman->getX();
+		//	int rayY = mPacman->getY();
+
+
+		//	switch (currentFacing)
+		//	{
+		//	case Direction::UP:
+		//		rayY -= step;
+		//		break;
+		//	case Direction::DOWN:
+		//		rayY += step;
+		//		break;
+		//	case Direction::LEFT:
+		//		rayX -= step;
+		//		break;
+		//	case Direction::RIGHT:
+		//		rayX += step;
+		//		break;
+		//	default:
+		//		break;
+		//	}
+		//	//Check map boundry
+		//	if (rayX < 0 || rayX >= currentMap.getCols() || rayY < 0 || rayY >= currentMap.getRows())
+		//	{
+		//		break;
+		//	}
+		//	//Wall block
+		//	if (currentMap.getTile(rayY, rayX) == 3) 
+		//	{
+		//		break;
+		//	}
+		//	//protection against array limits
+		//	if (mActiveRayTiles < 4)
+		//	{
+		//		mInfinityRayX[mActiveRayTiles] = rayX;
+		//		mInfinityRayY[mActiveRayTiles] = rayY;
+		//		mActiveRayTiles++;
+		//	}
+		//	killSequids(rayX, rayY);
+		//	
+		//}
+	}
+	if (mIsBeamActive) 
+	{
+		switch (mBeamDirection)
+		{
+		case Direction::UP:
+			mBeamY--;
+			break;
+		case Direction::DOWN:
+			mBeamY++;
+			break;
+		case Direction::LEFT:
+			mBeamX--;
+			break;
+		case Direction::RIGHT:
+			mBeamX++;
+			break;
+		default:
+			mIsBeamActive = false;
+			break;
+		}
+
+		if (mBeamX < 0 || mBeamX >= currentMap.getCols() || mBeamY < 0 && mBeamY >= currentMap.getRows()) 
+		{
+			mIsBeamActive = false;
+		}
+		else if (currentMap.getTile(mBeamY, mBeamX) == 3)
+		{
+			mIsBeamActive = false;
+		}
+		else 
+		{
+			bool hit = false;
+			for (Ghost* ghost : mGhosts) 
+			{
+				if (ghost != nullptr && ghost->getX() == mBeamX && ghost->getY() == mBeamY) 
+				{
+					if (ghost->getState() != GhostState::EATEN) 
+					{
+						killSequids(mBeamX, mBeamY);
+						hit = true;
+					}
+				}
+			}
+			if (hit) 
+			{
+				mIsBeamActive = false;
+			}
 		}
 	}
 	
@@ -921,6 +1013,13 @@ void GameManager::renderGame()
 			
 		}
 	}
+	if (mIsBeamActive) 
+	{
+		char beamCharacter = (mBeamDirection == Direction::LEFT || mBeamDirection == Direction::RIGHT) ? '=' : '|';
+		mWindow->Draw(mBeamX, mBeamY, beamCharacter, rayColor);
+		
+		
+	}
 
 	//Draw player on map
 	if (mPacman != nullptr) 
@@ -961,14 +1060,14 @@ void GameManager::renderGame()
 				mWindow->Draw(mAttackVisualX, mAttackVisualY, 'X', flashColor);
 			}
 
-			if (mChosenDifficulty == DifficultyChoice::Viltrumite)
-			{
-				//InfinityRay 3 tiles ahead				
-				for (int i = 0; i < mActiveRayTiles; i++)
-				{
-					mWindow->Draw(mInfinityRayX[i], mInfinityRayY[i], '>', rayColor);
-				}
-			}
+			//if (mChosenDifficulty == DifficultyChoice::Viltrumite)
+			//{
+			//	//InfinityRay 3 tiles ahead				
+			//	for (int i = 0; i < mActiveRayTiles; i++)
+			//	{
+			//		mWindow->Draw(mInfinityRayX[i], mInfinityRayY[i], '>', rayColor);
+			//	}
+			//}
 		}
 	}
 	mWindow->Display();
@@ -1183,6 +1282,7 @@ void GameManager::playerDeath()
 
 		mCurrentRound = 1;	
 		mCurrentLevel = 1;
+		mCurrentScore = 0;
 		mCurrentGameState = GameState::Menu;
 
 		delete mPacman;
