@@ -95,11 +95,11 @@ public:
 				//check for any pellets or power pellets
 				if (grid[i][j] == 1 || grid[i][j] == 2)
 				{
-					return true;
+					return false;
 				}
 			}
 		}
-		return false;
+		return true;
 	}
 
 	void renderASCII() const 

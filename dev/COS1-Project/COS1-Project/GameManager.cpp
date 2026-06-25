@@ -45,7 +45,7 @@ void GameManager::run()
 			handleMenuState();
 			break;
 		case GameState::Start:
-			initialLevel();
+			//initialLevel();
 			gameplayLoop();
 			break;
 		case GameState::HighScores:
@@ -337,6 +337,18 @@ void GameManager::initialLevel()
 		//load map
 		std::string mapFileName = "lvl" + std::to_string(mCurrentLevel) + ".txt";
 		currentMap = MapLoader::loadMap(mapFileName);
+		if (mapFileName == "lvl1.txt")
+		{
+			mapName = 1;
+		}
+		else if (mapFileName == "lvl2.txt")
+		{
+			mapName = 2;
+		}
+		else 
+		{
+			mapName = 3;
+		}
 
 		if (currentMap.getRows() == 0 || currentMap.getCols() == 0)
 		{
@@ -454,138 +466,143 @@ void GameManager::initialLevel()
 
 void GameManager::gameplayLoop()
 {
-	
-	if (mWindow != nullptr)
+
+	while (mCurrentGameState == GameState::Start) 
 	{
-		mWindow->clearScreen();
-	}
+		initialLevel();
 
-	mPowerPellet = false;
-	mPowerPelletTimer = 0;
-	mGhostStateTimer = 0;
-	mGhostHouseTimer = 0;
-
-	while (mLevelRun) 
-	{
-		
-		mGhostStateTimer++;
-		mGhostHouseTimer++;
-
-		int curentCycle = mGhostStateTimer % 270;
-		
-		//Handle Scatter(7secs) & Chase(20secs) conditions 
-		if (mGhostStateTimer == 200)
+		if (mWindow != nullptr)
 		{
-			for (Ghost* ghost : mGhosts)
+			mWindow->clearScreen();
+		}
+
+		mPowerPellet = false;
+		mPowerPelletTimer = 0;
+		mGhostStateTimer = 0;
+		mGhostHouseTimer = 0;
+
+		while (mLevelRun)
+		{
+
+			mGhostStateTimer++;
+			mGhostHouseTimer++;
+
+			int curentCycle = mGhostStateTimer % 270;
+
+			//Handle Scatter(7secs) & Chase(20secs) conditions 
+			if (mGhostStateTimer == 200)
 			{
-				if (ghost != nullptr && ghost->getState() == GhostState::CHASE)
+				for (Ghost* ghost : mGhosts)
 				{
-					ghost->setState(GhostState::SCATTER);					
+					if (ghost != nullptr && ghost->getState() == GhostState::CHASE)
+					{
+						ghost->setState(GhostState::SCATTER);
+					}
 				}
 			}
-		}
-		else if (mGhostStateTimer == 270)
-		{
-			for (Ghost* ghost : mGhosts)
+			else if (mGhostStateTimer == 270)
 			{
-				if (ghost != nullptr && ghost->getState() == GhostState::SCATTER)
+				for (Ghost* ghost : mGhosts)
 				{
-					ghost->setState(GhostState::CHASE);
-				}
-			}
-			mGhostStateTimer = 0; //Reset timer
-		}
-			
-		//Fruit timer
-		mFruitTimer++;		
-		if (!mShowFruit && mFruitTimer >= mSpawnFruit) 
-		{
-			currentMap.setRuntimeTile(currentMap.fruitY, currentMap.fruitX, 5);
-			mShowFruit = true;
-			mFruitTimer = 0;
-
-			ConsoleWindow::setCursorPosition(currentMap.fruitX, currentMap.fruitY);
-			std::cout << RED << "%" << RESET;
-		}
-		else if (mShowFruit && mFruitTimer >= mFruitVanish) 
-		{
-			if (currentMap.getTile(currentMap.fruitY, currentMap.fruitX) ==5) 
-			{
-				currentMap.setTile(currentMap.fruitY, currentMap.fruitX, 0);
-				ConsoleWindow::setCursorPosition(currentMap.fruitX, currentMap.fruitY);
-				std::cout << " ";
-			}
-			mShowFruit = false;
-			mFruitTimer = 0;
-		}
-		//Power pellet timer
-		if (mPowerPellet) 
-		{
-			mPowerPelletTimer--;
-			if (mPowerPelletTimer <= 0) 
-			{
-				mPowerPellet = false;
-				for (Ghost* ghost : mGhosts) 
-				{
-					//GhostState::CHASE;
-					if (ghost != nullptr) //ghost != nullptr && ghost.getState() == GhostState::FRIGHTENED) 
+					if (ghost != nullptr && ghost->getState() == GhostState::SCATTER)
 					{
 						ghost->setState(GhostState::CHASE);
 					}
 				}
+				mGhostStateTimer = 0; //Reset timer
 			}
-		}
 
-		//Player input
-		if (mPacman != nullptr)
-		{ 
-			mPacman->handleInput();
-		}
-
-		updateGame();
-		checkCollisions();
-		
-		//Fullscreen toggle
-		if (GetAsyncKeyState(VK_F11) & 0x8000)
-		{
-			//flip variable
-			mFullscreen = !mFullscreen;
-
-			ConsoleWindow::setConsoleFullscreen(mFullscreen);
-
-			if (!mFullscreen) 
+			//Fruit timer
+			mFruitTimer++;
+			if (!mShowFruit && mFruitTimer >= mSpawnFruit)
 			{
-				ConsoleWindow::fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
-			}			
-			Sleep(250);
+				currentMap.setRuntimeTile(currentMap.fruitY, currentMap.fruitX, 5);
+				mShowFruit = true;
+				mFruitTimer = 0;
+
+				ConsoleWindow::setCursorPosition(currentMap.fruitX, currentMap.fruitY);
+				std::cout << RED << "%" << RESET;
+			}
+			else if (mShowFruit && mFruitTimer >= mFruitVanish)
+			{
+				if (currentMap.getTile(currentMap.fruitY, currentMap.fruitX) == 5)
+				{
+					currentMap.setTile(currentMap.fruitY, currentMap.fruitX, 0);
+					ConsoleWindow::setCursorPosition(currentMap.fruitX, currentMap.fruitY);
+					std::cout << " ";
+				}
+				mShowFruit = false;
+				mFruitTimer = 0;
+			}
+			//Power pellet timer
+			if (mPowerPellet)
+			{
+				mPowerPelletTimer--;
+				if (mPowerPelletTimer <= 0)
+				{
+					mPowerPellet = false;
+					for (Ghost* ghost : mGhosts)
+					{
+						//GhostState::CHASE;
+						if (ghost != nullptr) //ghost != nullptr && ghost.getState() == GhostState::FRIGHTENED) 
+						{
+							ghost->setState(GhostState::CHASE);
+						}
+					}
+				}
+			}
+
+			//Player input
+			if (mPacman != nullptr)
+			{
+				mPacman->handleInput();
+			}
+
+			updateGame();
+			checkCollisions();
+
+			//Fullscreen toggle
+			if (GetAsyncKeyState(VK_F11) & 0x8000)
+			{
+				//flip variable
+				mFullscreen = !mFullscreen;
+
+				ConsoleWindow::setConsoleFullscreen(mFullscreen);
+
+				if (!mFullscreen)
+				{
+					ConsoleWindow::fitConsoleToMap(currentMap.getRows(), currentMap.getCols());
+				}
+				Sleep(250);
+			}
+
+
+			//Return to Main menu
+			if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+			{
+				mLevelRun = false;
+				mCurrentGameState = GameState::Menu;
+			}
+			renderGame();
+			Sleep(100);
 		}
-		
-		
-		//Return to Main menu
-		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) 
+
+
+		if (mWindow != nullptr)
 		{
-			mLevelRun = false;
-			mCurrentGameState = GameState::Menu;
+			mWindow->clearScreen();
 		}
-		renderGame();		
-		Sleep(100);
-	}
-	
 
-	if (mWindow != nullptr) 
-	{
-		mWindow->clearScreen();
-	}
+		if (mCurrentGameState != GameState::Start)
+		{
+			mCurrentGameState = GameState::Menu;
+			updateHighScore(mCurrentScore);
+			cleanLevel();
+		}
+		else {}
 
-	if(mCurrentGameState != GameState::Start)
-	{
-		mCurrentGameState = GameState::Menu;
-		updateHighScore(mCurrentScore);
-		cleanLevel();
-	}
-	else {}	
 
-	
+	}
 }
 
 void GameManager::updateGame()
@@ -711,18 +728,7 @@ void GameManager::updateGame()
 		mAttackVisualX = attackX;
 		mAttackVisualY = attackY;
 		killSequids(attackX, attackY);
-		//for (Ghost* ghost : mGhosts)
-		//{
-		//	if (ghost != nullptr && ghost->getX() == attackX && ghost->getY() == attackY)
-		//	{
-		//		if (ghost->getState() != GhostState::EATEN) 
-		//		{
-		//			ghost->setState(GhostState::EATEN);
-		//			mCurrentScore += 100;
-		//			//sound effect
-		//		}
-		//	}
-		//}
+		
 	}
 
 	//bool isViltrumiteMode = (mChosenDifficulty == DifficultyChoice::Viltrumite);
@@ -781,22 +787,10 @@ void GameManager::updateGame()
 				mActiveRayTiles++;
 			}
 			killSequids(rayX, rayY);
-			//for (Ghost* ghost : mGhosts)
-			//{
-			//	if (ghost != nullptr && ghost->getX() == rayX && ghost->getY() == rayY)
-			//	{
-			//		if (ghost->getState() != GhostState::EATEN)
-			//		{
-			//			ghost->setState(GhostState::EATEN);
-			//			mCurrentScore += 100;
-			//			//sound effect
-			//		}
-			//	}
-			//}
+			
 		}
 	}
-
-	//int exitGhostHouse[] = { 0,10,15,20 };
+	
 	int doorX = 13; //currentMap.getCols() / 2;
 	int doorY = 10; //(currentMap.getRows() / 2) - 1;
 
@@ -852,13 +846,7 @@ void GameManager::updateGame()
 			ghost->decreaseMovement();
 		}
 	}
-	/*for (Ghost* ghost : mGhosts)
-	{
-		if (ghost != nullptr && mPacman != nullptr)
-		{
-			ghost->updateAI(currentMap, mPacman->getX(), mPacman->getY(), mPacman->getCurrentDirection(), blinkyX, blinkyY);
-		}
-	}*/
+	
 	
 }
 
@@ -870,6 +858,9 @@ void GameManager::renderGame()
 	int mapCols = currentMap.getCols();
 	WORD white = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 	WORD yellow = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+	WORD red = FOREGROUND_RED | FOREGROUND_INTENSITY;
+	WORD brown = FOREGROUND_RED | FOREGROUND_GREEN;
+	WORD blue = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
 	WORD flashColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
 	WORD rayColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
 
@@ -886,7 +877,19 @@ void GameManager::renderGame()
 
 			if (tile == 1)
 			{
-				mWindow->Draw(x, renderY, '.', white);
+				
+				if (mapName == 1)
+				{
+					mWindow->Draw(x, renderY, '.', white);
+				}
+				else if (mapName == 2)
+				{
+					mWindow->Draw(x, renderY, '.', brown);
+				}
+				else
+				{
+					mWindow->Draw(x, renderY, '.', red);
+				}
 			}
 			else if (tile == 2)
 			{
@@ -894,7 +897,18 @@ void GameManager::renderGame()
 			}
 			else if (tile == 3)
 			{
-				mWindow->Draw(x, renderY, '#', FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+				if (mapName == 1) 
+				{ 
+					mWindow->Draw(x, renderY, '#', blue);
+				}
+				else if (mapName == 2)
+				{
+					mWindow->Draw(x, renderY, '#', flashColor);
+				}
+				else 
+				{
+					mWindow->Draw(x, renderY, '#', brown);
+				}
 			}
 			else if (tile == 4)
 			{
@@ -1087,7 +1101,7 @@ void GameManager::checkCollisions()
 		
 	}
 	//Clear the map
-	if (!currentMap.clearedPellets()) 
+	if (currentMap.clearedPellets()) 
 	{
 		mLevelRun = false;
 		//SoundManager::stop();
@@ -1109,9 +1123,9 @@ void GameManager::checkCollisions()
 		mCurrentScore += 1000;
 
 		//Advance to next round
-		if (mCurrentRound < 2) 
+		if (mCurrentRound == 1 || mCurrentRound == 2)
 		{
-			mCurrentRound++;
+			mCurrentRound++;			
 			mCurrentGameState = GameState::Start;
 		}
 		else 
@@ -1167,7 +1181,8 @@ void GameManager::playerDeath()
 		mWindow->Display();
 		Sleep(3000);
 
-		mCurrentRound = 1;		
+		mCurrentRound = 1;	
+		mCurrentLevel = 1;
 		mCurrentGameState = GameState::Menu;
 
 		delete mPacman;

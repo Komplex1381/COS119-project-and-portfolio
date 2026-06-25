@@ -46,6 +46,7 @@ private:
 	const int mChase = 200;
 	const int mScatter = 80;
 	const int mFrightened = 80;
+	const int mMaxRounds = 3;
 	GhostState mGlobalGhostState = GhostState::SCATTER;
 
 	int mGhostStateTimer;
@@ -65,7 +66,7 @@ private:
 	int mWaveSpawnTimer = 0;
 	double mWaveSpeedModifier = 1.0;
 	
-	
+	int mapName;
 
 	Menu gameMenu;
 	Map currentMap;
