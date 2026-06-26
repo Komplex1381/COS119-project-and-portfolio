@@ -60,7 +60,8 @@ void Menu::drawMenu()
 	std::cout << "##########################################################\n";
 	std::cout << RESET;
 	std::cout << WHITE << "press " << RED << "ESC" << WHITE <<" key at anytime to return to game menu.\n";
-	std::cout << WHITE << "Player " << YELLOW << "movement" << WHITE<< ":" << RED << " W, A, S, D " << WHITE << "or" << RED << " Arrow keys" << RESET;
+	std::cout << WHITE << "Player " << YELLOW << "movement" << WHITE<< ":" << RED << " W, A, S, D " << WHITE << "or" << RED << " Arrow keys" << RESET << "\n";
+	std::cout << YELLOW << "F11 " << WHITE << " for FULLSCREEN (Level 2 doesnt show correctly unless you hit F11).";
 }
 
 
