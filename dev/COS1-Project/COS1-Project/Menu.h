@@ -1,6 +1,11 @@
 #pragma once
 #include<iostream>
+#include <fstream>
 #include "MenuChoice.h"
+#include <string>
+#include "Helper.h"
+#include <conio.h> // for windows input
+#include <Windows.h>
 
 class Menu
 {
@@ -12,6 +17,7 @@ private:
 	void drawLine(const std::string& text, const std::string& textColor, const std::string& borderColor) const;
 public:
 	void drawMenu();
+	//void drawInvinvicibleMenu();
 	void setHighScore(int score);
 	//draw to test other ideas as I figure out how to upgrade from ASCII 
 	void draw2();

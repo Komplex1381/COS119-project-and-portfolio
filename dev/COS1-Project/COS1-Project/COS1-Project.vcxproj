@@ -152,6 +152,7 @@
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Pacman.cpp" />
     <ClCompile Include="Pellet.cpp" />
+    <ClCompile Include="Sequids.cpp" />
     <ClCompile Include="SoundManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -169,6 +170,7 @@
     <ClInclude Include="MenuChoice.h" />
     <ClInclude Include="Pacman.h" />
     <ClInclude Include="Pellet.h" />
+    <ClInclude Include="Sequids.h" />
     <ClInclude Include="SoundManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

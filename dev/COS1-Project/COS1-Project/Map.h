@@ -9,6 +9,7 @@ private:
 	int mRows;
 	int mCols;	
 	std::vector<std::vector<int>> grid;
+	std::vector<std::vector<int>> initialGrid;//back up to reset rounds
 
 public:	
 
@@ -19,7 +20,7 @@ public:
 	std::vector<int> ghostX;
 	std::vector<int> ghostY;
 
-	Map(int rows, int cols)	: mRows(rows), mCols(cols), grid(rows, std::vector<int>(cols, 0))
+	Map(int rows, int cols)	: mRows(rows), mCols(cols), grid(rows, std::vector<int>(cols, 0)), initialGrid(rows, std::vector<int>(cols, 0))
 	{
 		
 	}	
@@ -29,9 +30,21 @@ public:
 		if (r >= 0 && r < mRows && c >= 0 && c < mCols)
 		{
 			grid[r][c] = type;
+			initialGrid[r][c] = type;
 		}
 	}
-
+	void setRuntimeTile(int r, int c, char type)
+	{
+		if (r >= 0 && r < mRows && c >= 0 && c < mCols)
+		{
+			grid[r][c] = type;
+			initialGrid[r][c] = type;
+		}
+	}
+	void resetPellets() 
+	{
+		grid = initialGrid;
+	}
 	int getRows() const 
 	{
 		return mRows;
@@ -82,11 +95,11 @@ public:
 				//check for any pellets or power pellets
 				if (grid[i][j] == 1 || grid[i][j] == 2)
 				{
-					return true;
+					return false;
 				}
 			}
 		}
-		return false;
+		return true;
 	}
 
 	void renderASCII() const 

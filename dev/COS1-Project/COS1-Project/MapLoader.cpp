@@ -1,7 +1,5 @@
 #include "MapLoader.h"
-#include <iostream>
-#include <string>
-#include <fstream>
+
 
 //MapLoader class so that later I can upgrade graphics to SFML or SDL.
 Map MapLoader::loadMap(const std::string& filename)

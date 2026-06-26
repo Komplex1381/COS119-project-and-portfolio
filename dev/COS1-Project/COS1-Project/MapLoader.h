@@ -1,5 +1,8 @@
 #pragma once
 #include "Map.h"
+#include <iostream>
+#include <string>
+#include <fstream>
 
 class MapLoader
 {

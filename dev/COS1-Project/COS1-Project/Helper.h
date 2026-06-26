@@ -9,7 +9,9 @@ inline const std::string YELLOW = "\033[33m";
 inline const std::string BLUE = "\033[34m";
 inline const std::string CYAN = "\033[36m";
 inline const std::string WHITE = "\033[97m";
+inline const std::string BROWN = "\033[38;5;94m";
 inline const std::string RESET = "\033[0m";
+//"\033[38;5;94mThis text is brown\033[0m\n"
 
 namespace Helper
 {
