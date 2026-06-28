@@ -38,13 +38,13 @@ public:
 		if (r >= 0 && r < mRows && c >= 0 && c < mCols)
 		{
 			grid[r][c] = type;
-			initialGrid[r][c] = type;
+			
 		}
 	}
-	void resetPellets() 
+	/*void resetPellets() 
 	{
 		grid = initialGrid;
-	}
+	}*/
 	int getRows() const 
 	{
 		return mRows;
@@ -100,6 +100,19 @@ public:
 			}
 		}
 		return true;
+	}
+	void resetPellets()
+	{
+		for (int r = 0; r < mRows; r++)
+		{
+			for (int c = 0; c < mCols; c++)
+			{
+				//Reset pellets or power pellets
+				grid[r][c] = initialGrid[r][c];
+				
+			}
+		}
+		
 	}
 
 	void renderASCII() const 

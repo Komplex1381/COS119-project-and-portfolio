@@ -10,6 +10,7 @@ Map MapLoader::loadMap(const std::string& filename)
         int rows = 0;
         int cols = 0;
         std::string line;
+        //std::vector<std::string> mapLines;
 
         while (std::getline(fileIn, line))
         {

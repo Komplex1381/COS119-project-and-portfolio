@@ -67,27 +67,7 @@ int GameManager::getHighscore() const
 	return mHighScore;
 }
 
-void GameManager::killSequids(int targetX, int TargetY)
-{
-	for (int i = static_cast<int>(mGhosts.size()) - 1; i >= 0; i--) 
-	{
-		Ghost* ghost = mGhosts[i];
-		if(ghost != nullptr && ghost->getX() == targetX && ghost->getY() == TargetY)
-		{
-			if(mChosenDifficulty == DifficultyChoice::Viltrumite)
-			{
-				delete ghost;
-				mGhosts.erase(mGhosts.begin() + i);
-				mCurrentScore += 100;
-			}
-			else if (ghost->getState() != GhostState::EATEN)
-			{
-				ghost->setState(GhostState::EATEN);
-				mCurrentScore += 100;
-			}
-		}
-	}
-}
+
 
 void GameManager::loadScores()
 {
@@ -198,6 +178,7 @@ void GameManager::handleMenuState()
 
 	if (GetAsyncKeyState(VK_RETURN) & 0x8000)
 	{
+		Sleep(200);
 		switch(choice) 
 		{
 		case MenuChoice::Start:
@@ -220,8 +201,9 @@ void GameManager::handleMenuState()
 			break;
 		}
 		//pause game allow for input
-		Sleep(200);
+		//Sleep(200);
 	}
+	//mWindow->clearScreen(); //Not clearing the screen after initial game start and return to menu.
 	system("cls");
 }
 
@@ -327,7 +309,7 @@ void GameManager::initialLevel()
 	mWaveSpeedModifier = 1.0;	
 
 	//ConsoleWindow::initialize(L"PAC-MAN P&P Edition", 80, 80);
-	if (mCurrentRound == 1) 
+	if (mCurrentRound == 1 || mCurrentRound == 3 || mCurrentRound == 5)
 	{
 		cleanLevel();
 		mExitGhostHouse.clear();
@@ -335,19 +317,10 @@ void GameManager::initialLevel()
 		//load map
 		std::string mapFileName = "lvl" + std::to_string(mCurrentLevel) + ".txt";
 		currentMap = MapLoader::loadMap(mapFileName);
-		if (mapFileName == "lvl1.txt")
-		{
-			mapName = 1;
-		}
-		else if (mapFileName == "lvl2.txt")
-		{
-			mapName = 2;
-		}
-		else 
-		{
-			mapName = 3;
-		}
+		mapName = mCurrentLevel;
+		
 
+		//Safty check
 		if (currentMap.getRows() == 0 || currentMap.getCols() == 0)
 		{
 			std::cout << "\nFailed to load Map: " << mapFileName << "\n";
@@ -363,6 +336,7 @@ void GameManager::initialLevel()
 	}
 	else 
 	{
+		//for rounds 2,4, and 6
 		currentMap.resetPellets();
 	}
 	if (mPacman != nullptr)
@@ -424,13 +398,22 @@ void GameManager::initialLevel()
 	};
 	//mGhosts.clear();
 	//size_t instantSpawns = currentMap.ghostX.size();
-	int spawnX = currentMap.ghostX[0];
-	int spawnY = currentMap.ghostY[0];
+	//int spawnX = currentMap.ghostX[0];
+	//int spawnY = currentMap.ghostY[0];
+	if (currentMap.ghostX.empty() || currentMap.ghostY.empty())
+	{
+		std::cout << "Error map does not contain any ghost spawn points!\n";
+		return;
+	}
+
 	//Spawning loop
 	for (size_t i = 0; i < ghostSpawnCount; i++)
 	{
 		size_t coordIndex = i % currentMap.ghostX.size();
 		WORD color = ghostColors[i % 4];
+
+		int spawnX = currentMap.ghostX[coordIndex];
+		int spawnY = currentMap.ghostY[coordIndex];
 
 		int targetX = spawnX;
 		int targetY = spawnY;
@@ -482,7 +465,7 @@ void GameManager::initialLevel()
 	}
 
 	//Only play intro at start of a map
-	if (mCurrentRound == 1) 
+	if (mCurrentRound == 1 || mCurrentRound == 3 || mCurrentRound == 5)
 	{
 		SoundManager::playSFX("StartMusic.wav");
 
@@ -497,10 +480,11 @@ void GameManager::initialLevel()
 
 void GameManager::gameplayLoop()
 {
+	initialLevel();
 
 	while (mCurrentGameState == GameState::Start) 
 	{
-		initialLevel();
+		//initialLevel();
 
 		if (mWindow != nullptr)
 		{
@@ -521,26 +505,29 @@ void GameManager::gameplayLoop()
 			int curentCycle = mGhostStateTimer % 270;
 
 			//Handle Scatter(7secs) & Chase(20secs) conditions 
-			if (mGhostStateTimer == 200)
+			if (!mPowerPellet) 
 			{
-				for (Ghost* ghost : mGhosts)
+				if (curentCycle == 200)
 				{
-					if (ghost != nullptr && ghost->getState() == GhostState::CHASE)
+					for (Ghost* ghost : mGhosts)
 					{
-						ghost->setState(GhostState::SCATTER);
+						if (ghost != nullptr && ghost->getState() == GhostState::CHASE)
+						{
+							ghost->setState(GhostState::SCATTER);
+						}
 					}
 				}
-			}
-			else if (mGhostStateTimer == 270)
-			{
-				for (Ghost* ghost : mGhosts)
+				else if (curentCycle == 0)
 				{
-					if (ghost != nullptr && ghost->getState() == GhostState::SCATTER)
+					for (Ghost* ghost : mGhosts)
 					{
-						ghost->setState(GhostState::CHASE);
+						if (ghost != nullptr && ghost->getState() == GhostState::SCATTER)
+						{
+							ghost->setState(GhostState::CHASE);
+						}
 					}
+					//mGhostStateTimer = 0; //Reset timer
 				}
-				mGhostStateTimer = 0; //Reset timer
 			}
 
 			//Fruit timer
@@ -572,6 +559,7 @@ void GameManager::gameplayLoop()
 				if (mPowerPelletTimer <= 0)
 				{
 					mPowerPellet = false;
+					mGhostEaten = 0;
 					for (Ghost* ghost : mGhosts)
 					{
 						//GhostState::CHASE;
@@ -619,18 +607,25 @@ void GameManager::gameplayLoop()
 		}
 
 
-		if (mWindow != nullptr)
+		/*if (mWindow != nullptr)
 		{
 			mWindow->clearScreen();
-		}
+		}*/
 
-		if (mCurrentGameState != GameState::Start)
+		if (mCurrentGameState == GameState::Start)
 		{
-			mCurrentGameState = GameState::Menu;
+			initialLevel();
+			//mCurrentGameState = GameState::Menu;
+			//updateHighScore(mCurrentScore);
+			//cleanLevel();
+		}
+		else 
+		{
+			//initialLevel();
+			//mCurrentGameState = GameState::Menu;
 			updateHighScore(mCurrentScore);
 			cleanLevel();
 		}
-		else {}
 
 
 	}
@@ -640,7 +635,8 @@ void GameManager::updateGame()
 {
 	mIsAttacking = false;
 	mActiveRayTiles = 0;
-	//player & ghost update here
+
+	//Erase pacmans current frame
 	if (mPacman != nullptr)
 	{
 		//return;
@@ -648,38 +644,7 @@ void GameManager::updateGame()
 		std::cout << " ";
 	}
 
-	//Sequid wave Spawner
-	if (mChosenDifficulty == DifficultyChoice::Viltrumite && mCurrentWave < 4) 
-	{
-		mWaveSpawnTimer++;
-		if (mWaveSpawnTimer >= 300) 
-		{
-			mWaveSpawnTimer = 0;
-			mCurrentWave++;
-			mWaveSpeedModifier += 0.15;
-			WORD sequidColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-
-			for (size_t i = 0; i < 20; i++)
-			{
-				size_t coordIndex = i % currentMap.ghostX.size();
-				double dynamicSpeed = mBaseGhostSpeed * mWaveSpeedModifier;
-
-				Sequids* sequidWave = new Sequids(currentMap.ghostX[coordIndex], currentMap.ghostY[coordIndex], dynamicSpeed, sequidColor);
-				sequidWave->SetWaveSpeed(mWaveSpeedModifier);
-
-				mGhosts.push_back(sequidWave);
-				mExitGhostHouse.push_back(i * 30);//Spacing
-			}
-			//SoundManager::playSFX("Sequid.wav");
-		}
-
-		
-	}
-
-	int blinkyX = 0;
-	int blinkyY = 0;
-	WORD blinkyColorCode = FOREGROUND_RED | FOREGROUND_INTENSITY;
-
+	//Erase ghost at current location
 	for (const Ghost* ghost : mGhosts)
 	{
 		if (ghost != nullptr)
@@ -717,16 +682,62 @@ void GameManager::updateGame()
 
 			}
 
-
-			if (ghost->getColor() == blinkyColorCode)
-			{
-				blinkyX = ghost->getX();
-				blinkyY = ghost->getY();
-				//break;
-			}
+			//if (ghost->getColor() == blinkyColorCode)
+			//{
+			//	blinkyX = ghost->getX();
+			//	blinkyY = ghost->getY();
+			//	//break;
+			//}
 		}
 	}
 
+	//Sequid wave Spawner
+	if (mChosenDifficulty == DifficultyChoice::Viltrumite && mCurrentWave < 4) 
+	{
+		mWaveSpawnTimer++;
+		if (mWaveSpawnTimer >= 300) 
+		{
+			mWaveSpawnTimer = 0;
+			mCurrentWave++;
+			mWaveSpeedModifier += 0.15;
+			WORD sequidColor = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+
+			if (!currentMap.ghostX.empty())
+			{
+				for (size_t i = 0; i < 20; i++)
+				{
+					size_t coordIndex = i % currentMap.ghostX.size();
+					double dynamicSpeed = mBaseGhostSpeed * mWaveSpeedModifier;
+
+					Sequids* sequidWave = new Sequids(currentMap.ghostX[coordIndex], currentMap.ghostY[coordIndex], dynamicSpeed, sequidColor);
+					sequidWave->SetWaveSpeed(mWaveSpeedModifier);
+
+					mGhosts.push_back(sequidWave);
+					mExitGhostHouse.push_back(i * 30);//Spacing
+				}
+			}
+			//SoundManager::playSFX("Sequid.wav");
+		}
+
+		
+	}
+
+	//Track Blinky for Pinky logic
+	int blinkyX = 0;
+	int blinkyY = 0;
+	WORD blinkyColorCode = FOREGROUND_RED | FOREGROUND_INTENSITY;
+
+	for (const Ghost* ghost : mGhosts)
+	{
+		if (ghost != nullptr && ghost->getColor() == blinkyColorCode)
+		{
+			blinkyX = ghost->getX();
+			blinkyY = ghost->getY();
+			break;
+		}
+	}
+	
+	//Update Pacman position and grid state
 	if (mPacman != nullptr)
 	{
 		mPacman->update(currentMap);
@@ -864,7 +875,7 @@ void GameManager::updateGame()
 			}
 		}
 	}
-	
+	//Process Ghost house
 	int doorX = 13; //currentMap.getCols() / 2;
 	int doorY = 10; //(currentMap.getRows() / 2) - 1;
 
@@ -930,6 +941,8 @@ void GameManager::renderGame()
 
 	int mapRows = currentMap.getRows();
 	int mapCols = currentMap.getCols();
+
+	//windows Console Color Handles
 	WORD white = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 	WORD yellow = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
 	WORD red = FOREGROUND_RED | FOREGROUND_INTENSITY;
@@ -941,7 +954,7 @@ void GameManager::renderGame()
 	
 
 	//Draw HUD Header - moved below score
-	
+	//Draw Map tiles
 	for (int y = 0; y < mapRows; y++) 
 	{
 		for (int x = 0; x < mapCols; x++)
@@ -995,6 +1008,7 @@ void GameManager::renderGame()
 			
 		}
 	}
+	//Infinity Ray draw
 	if (mIsBeamActive) 
 	{
 		char beamCharacter = (mBeamDirection == Direction::LEFT || mBeamDirection == Direction::RIGHT) ? '=' : '|';
@@ -1033,20 +1047,41 @@ void GameManager::renderGame()
 		}
 		
 		//Invinible Visual Attacks				
-		if (mIsAttacking)
+		if (mIsAttacking && mAttackVisualX >= 0 && mAttackVisualY >= 0)
 		{
-			if (mAttackVisualX >= 0 && mAttackVisualY >= 0)
-			{
-				//Punch 1 tile ahead			
-				mWindow->Draw(mAttackVisualX, mAttackVisualY, 'X', flashColor);
-			}
+			//Punch 1 tile ahead			
+			mWindow->Draw(mAttackVisualX, mAttackVisualY, 'X', flashColor);
+			//if (mAttackVisualX >= 0 && mAttackVisualY >= 0)
+			//{
+			//	//Punch 1 tile ahead			
+			//	mWindow->Draw(mAttackVisualX, mAttackVisualY, 'X', flashColor);
+			//}
 			
+		}
+	}
+	//mWindow->Display();
+
+	//Draw HUD Footer
+	int BottumHud = mapRows;
+	int hudScoreY = BottumHud + 1;
+
+	std::string score = "Score: " + std::to_string(mCurrentScore);
+	for (size_t i = 0; i < score.length(); i++)
+	{
+		mWindow->Draw(static_cast<int>(i), hudScoreY, score[i], yellow);
+	}
+
+	std::string hiScore = "HIGH SCORE: " + std::to_string(mHighScore);
+	int hiScoreX = mapCols - static_cast<int>(hiScore.length());
+	if (hiScoreX > 0)
+	{
+		for (size_t i = 0; i < hiScore.length(); i++)
+		{
+			mWindow->Draw(hiScoreX + static_cast<int>(i), hudScoreY, hiScore[i], FOREGROUND_RED | FOREGROUND_INTENSITY);
 		}
 	}
 	mWindow->Display();
 
-	//Draw HUD Footer
-	int BottumHud = mapRows;
 	ConsoleWindow::setCursorPosition(0, BottumHud);	
 	std::cout << WHITE << "LIVES: ";
 	
@@ -1054,15 +1089,17 @@ void GameManager::renderGame()
 	for (int i = 0; i < totalLives; i++) 
 	{
 		std::cout << YELLOW << "C " << RESET;
+		//mWindow->Draw();
 	}
 
 	std::cout << WHITE << "           ";
 	ConsoleWindow::setCursorPosition(mapCols - 15, BottumHud);
 	std::cout << YELLOW << "  FRUIT: " << RED << "%" << RESET << "    \n";
+	//mWindow->Draw();
 	
 	//Display Score & Highscore
-	int hudScoreY = BottumHud + 1;
-	std::string score = "Score: " + std::to_string(mCurrentScore);
+	
+	/*std::string score = "Score: " + std::to_string(mCurrentScore);
 	for (size_t i = 0; i < score.length(); i++)
 	{
 		mWindow->Draw(static_cast<int>(i), hudScoreY, score[i], yellow);
@@ -1076,15 +1113,16 @@ void GameManager::renderGame()
 		{
 			mWindow->Draw(hiScoreX + static_cast<int>(i), hudScoreY, hiScore[i], FOREGROUND_RED | FOREGROUND_INTENSITY);
 		}
-	}
+	}*/
+	
 	//Display Score
-	ConsoleWindow::setCursorPosition(0, hudScoreY);
-	std::cout << WHITE << "Score: " << YELLOW << mCurrentScore;	
+	//ConsoleWindow::setCursorPosition(0, hudScoreY);
+	//std::cout << WHITE << "Score: " << YELLOW << mCurrentScore;	
 	
 	//Display highscore
-	ConsoleWindow::setCursorPosition(hiScoreX, hudScoreY);
-	std::cout << WHITE << "HIGH SCORE: " << RED << mHighScore << "\n";
-	RESET;
+	//ConsoleWindow::setCursorPosition(hiScoreX, hudScoreY);
+	//std::cout << WHITE << "HIGH SCORE: " << RED << mHighScore << "\n";
+	//RESET;
 	
 	ConsoleWindow::setCursorPosition(0, 0);
 }
@@ -1092,7 +1130,7 @@ void GameManager::renderGame()
 
 void GameManager::checkCollisions()
 {
-	Pellet pellet;
+	//Pellet pellet;
 
 	if (mPacman == nullptr) 
 	{
@@ -1105,18 +1143,19 @@ void GameManager::checkCollisions()
 	//Pellet munch
 	if (currentTile == 1)
 	{
-		currentMap.setTile(pacY, pacX, 0);
+		currentMap.setRuntimeTile(pacY, pacX, 0);
 		mCurrentScore += 10;		
 		//SoundManager::playSFX("Eating.wav");
 
 	}
-	else if (currentTile == 2) //POWER Pellet
+	else if (currentTile == 2) //POWER Pellet Active
 	{
-		currentMap.setTile(pacY, pacX, 0);
+		currentMap.setRuntimeTile(pacY, pacX, 0);
 		mCurrentScore += 50;
 
 		mPowerPellet = true;
 		mPowerPelletTimer = 50;
+		mGhostEaten = 0;
 		SoundManager::playSFX("GhostBlue.wav");
 
 		for (Ghost* ghost : mGhosts)
@@ -1148,38 +1187,62 @@ void GameManager::checkCollisions()
 		{
 			continue;
 		}
+
 		int ghostX = ghost->getX();
 		int ghostY = ghost->getY();
-		bool overlap = pacX == ghostX && pacY == ghostY;
-		bool collision = pacX == ghost->getPreviousX() && pacY == ghost->getPreviousY() && mPacman->getPreviousX() == ghostX && mPacman->getPreviousY() == ghostY;
 
-		if (!collision && !overlap)
+		bool overlap = pacX == ghostX && pacY == ghostY;
+		//bool collision = pacX == ghost->getPreviousX() && pacY == ghost->getPreviousY() && mPacman->getPreviousX() == ghostX && mPacman->getPreviousY() == ghostY;
+		bool collision = (pacX == ghost->getPreviousX() && pacY == ghost->getPreviousY()) || (ghostX == mPacman->getPreviousX() && ghostY == mPacman->getPreviousY());
+
+		/*if (!collision && !overlap)
 		{
 			continue;
-		}
-		if (ghost->getState() == GhostState::FRIGHTENED) 
+		}*/
+		if (collision || overlap)
 		{
-			mCurrentScore += 200;
-			//Sound effect
-			SoundManager::playSFX("EatingTheGhost.wav");
-			ghost->setState(GhostState::EATEN);
-					
-		}
-		else if(ghost->getState() != GhostState::EATEN)
-		{
-			playerDeath();			
-			return;
+			if (ghost->getState() == GhostState::FRIGHTENED)
+			{
+				const int ghostScore[] = { 0,200,400,800,1600 }; 
+				int index = (mGhostEaten > 4) ? 4 : mGhostEaten;
+				int scoreMultiplier = ghostScore[index];
+				
+				mCurrentScore += scoreMultiplier;
+
+				SoundManager::playSFX("EatingTheGhost.wav");
+				if (mChosenDifficulty == DifficultyChoice::Viltrumite) 
+				{
+					killSequids(ghostX, ghostY);					
+					i--;
+				}
+				else 
+				{ 
+					ghost->setState(GhostState::EATEN);
+				}
+
+			}
+			else if (ghost->getState() != GhostState::EATEN)
+			{
+				playerDeath();
+				return;
+			}
 		}
 			
 		
 	}
-	//Clear the map
+	//Clear the map Win condition
 	if (currentMap.clearedPellets()) 
 	{
+		if (!mLevelRun)
+		{
+			return;
+		}
+
 		mLevelRun = false;
 		SoundManager::stop();
 		SoundManager::playSFX("CreditSound.wav");
 
+		//Draw Game overlay
 		int middleScreenX = currentMap.getCols() / 2 - 5;
 		int middleScreenY = currentMap.getRows() / 2;
 		std::string victoryText = "Victory!";
@@ -1195,19 +1258,30 @@ void GameManager::checkCollisions()
 		
 		mCurrentScore += 1000;
 
+		//Rounds per map level
+		mCurrentRound++;
+
 		//Advance to next round
-		if (mCurrentRound == 1 || mCurrentRound == 2)
+		if (mCurrentRound == 3)
 		{
-			mCurrentRound++;			
+			mCurrentLevel = 2;
+			//mCurrentRound++;			
 			//mCurrentGameState = GameState::Start;
 		}
-		else 
+		else if (mCurrentRound == 5)
 		{
-			mCurrentRound = 1;
-			mCurrentLevel++;
+			mCurrentLevel = 3;
+			//mCurrentRound = 1;
+			//mCurrentLevel++;
 			//mCurrentGameState = GameState::Start;
+		}
+		else if (mCurrentRound > 6)
+		{
+			mCurrentLevel = 1;
+			mCurrentRound = 1;
 		}
 		mCurrentGameState = GameState::Start;
+		//mLevelRun = false;
 		return;
 	}
 }
@@ -1223,9 +1297,14 @@ void GameManager::cleanLevel()
 		delete ghost;
 	}
 	mGhosts.clear();
+	mExitGhostHouse.clear();
 }
 void GameManager::playerDeath()
 {
+	if (mPacman == nullptr) 
+	{
+		return;
+	}
 	mPacman->decreaseLives();
 	SoundManager::playSFX("Fail.wav");
 
@@ -1258,17 +1337,21 @@ void GameManager::playerDeath()
 		mCurrentRound = 1;	
 		mCurrentLevel = 1;
 		mCurrentScore = 0;
+		mBonusLife = false;
 		mCurrentGameState = GameState::Menu;
 
-		cleanLevel();
+		//cleanLevel();
 
 	}
 	else//Reset positions
 	{
 		mPacman->setX(currentMap.pacmanX);
 		mPacman->setY(currentMap.pacmanY);
+
 		mPacman->setCurDirection(Direction::NONE);
 		mPacman->setNextDirection(Direction::NONE);
+
+		//size_t spawnPointsAvailable = currentMap.ghostX.size();
 
 		for (size_t j = 0; j < mGhosts.size(); j++)
 		{
@@ -1292,4 +1375,46 @@ void GameManager::playerDeath()
 	}
 }
 
+void GameManager::killSequids(int targetX, int targetY)
+{
+	for (int i = static_cast<int>(mGhosts.size()) - 1; i >= 0; i--)
+	{
+		Ghost* ghost = mGhosts[i];
+		if (ghost != nullptr && ghost->getX() == targetX && ghost->getY() == targetY)
+		{
+			if (mChosenDifficulty == DifficultyChoice::Viltrumite)
+			{
+				delete ghost;
+				mGhosts.erase(mGhosts.begin() + i);
+				mCurrentScore += 100;
+				if (static_cast<size_t>(i) < mExitGhostHouse.size()) 
+				{
+					mExitGhostHouse.erase(mExitGhostHouse.begin() + i);
+				}
+			}
+			else if (ghost->getState() != GhostState::EATEN)
+			{
+				ghost->setState(GhostState::EATEN);
+				mCurrentScore += 100;
+			}
+		}
+	}
+}
 
+void GameManager::bonusLives()
+{
+	if (mPacman == nullptr)
+	{
+		return;
+	}
+	if (!mBonusLife && mCurrentScore >= 10000) 
+	{
+		mBonusLife = true;
+
+		if (mPacman->getLives() < 5) 
+		{
+			mPacman->increaseLives();
+			SoundManager::playSFX("ExtendSound.wav");
+		}
+	}
+}

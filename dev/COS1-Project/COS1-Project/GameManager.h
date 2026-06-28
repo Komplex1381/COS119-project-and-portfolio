@@ -47,6 +47,8 @@ private:
 	//Power Pellet
 	bool mPowerPellet;
 	int mPowerPelletTimer;
+	int mGhostEaten = 0;
+	bool mBonusLife = false;
 
 	//Ghost Varibales
 	const int mChase = 200;
@@ -108,5 +110,6 @@ public:
 	void run();	
 	int getHighscore() const;
 	void killSequids(int targetX, int TargetY);
+	void bonusLives();
 };
 

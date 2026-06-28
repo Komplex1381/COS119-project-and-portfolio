@@ -20,7 +20,7 @@ WORD Ghost::getColor() const
 void Ghost::draw() const
 {
 
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	/*HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	COORD coord = { static_cast<short>(getX()), static_cast<short>(getY()) };
 	SetConsoleCursorPosition(hConsole, coord);
 
@@ -34,7 +34,7 @@ void Ghost::draw() const
 	}
 
 	std::cout << static_cast<char>(getTileChar());
-	SetConsoleTextAttribute(hConsole, 7);
+	SetConsoleTextAttribute(hConsole, 7);*/
 }
 
 void Ghost::updateAI(const Map& gameMap, int pacmanX, int pacmanY, Direction pacmanDirection, int blinkyX, int blinkyY)
